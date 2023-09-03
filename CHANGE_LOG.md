@@ -1,0 +1,63 @@
+### V1.0.1
+***
+- google API
+- timex补充函数 
+- 更名pagination为pagex，防止命名与变量名重复
+- struct相关操作函数
+- string编码转换
+- IP所在地查询(By Baidu api)
+- json添加gjson path直接获取路径下的值
+- 更换kafka实现
+- grpc配置调整
+- 新的kafka库以支持rebalanced后的不消费问题
+- 新的kafka库信息消费延迟确认逻辑- 添加slack机器人
+- LRU和LFU的支持异步的实现
+- json valid 验证json字符串是否合规
+- crypto解密输入参数处理
+- rand修改实现方案
+- json支持json.RawMessage
+- ~~json.Stringify返回值确保在logs或fmt调用时正确打印string~~
+- 新增json.String返回string
+- 修复MarshalJSON reflect调用默认实现,导致输出base64的问题
+- logs替换kafka库
+- 新增websocket
+- mongo 添加 EExists 返回error作为判断依据
+- 修改加密的mode和padding常量类型，防止错误使用
+- gRPC增加重连机制防止连接意外断开
+- kafka修改消费过程中的错误处理方式
+- 添加数字类操作
+- string操作增加驼峰转蛇形方法
+- timex增加返回time.Duration方法
+- 添加string数组元素修改替换
+- 添加string to number的是否为数字的判断
+- 添加方法获取每周、月、年的最后一天的零点和23：59：59
+- redis添加set操作方法
+- redis添加keys和scan方法
+- LRU锁调整
+- redis添加LSet
+- s3添加下载方法
+- stringx添加string数组转bool数组
+- stringx Split添加输出int32数组
+- rand添加生成字母数字随机字符串
+- rand添加生成数字随机字符串
+- 添加websocket
+- mysql事务添加UpgradeFilter
+- stringx添加获取UTF-8字符串长度函数
+- mongo返回当前session的context
+- grpc Dail添加grpc配置信息
+- tg SDK 回调函数判空
+- timex添加ParseInLocation和LoadLocation方法
+- ~~qbd添加InVals方法，但出于SQL安全考虑不推荐使用~~
+- mongo开启retry
+- map添加SortByKey和SotByValue系列方法
+- stringx split返回int8数组
+- redis出于灵活性考虑添加Cli方法返回原始redis client
+- array添加去重操作
+- stringx添加字符串去重操作
+- rsa添加keyFormat以格式化公私密钥
+- rsa添加私钥处理方式选择WithPrivateParse
+- des、tripleDes IV判断要忽略ECB模式
+- numerical修复float截取小数位数参数无效问题
+- redis添加非严格操作HSETEX
+### V1.0.2
+***
