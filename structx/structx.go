@@ -8,8 +8,9 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
-	"std-library/crypto/md5"
 	"strings"
+
+	"github.com/odycenter/std-library/crypto/md5"
 )
 
 type EncodeValue url.Values

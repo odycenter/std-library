@@ -2,8 +2,9 @@ package json_test
 
 import (
 	"fmt"
-	"std-library/json"
 	"testing"
+
+	"github.com/odycenter/std-library/json"
 )
 
 func TestParse(t *testing.T) {

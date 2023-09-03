@@ -1,8 +1,9 @@
 package logs_test
 
 import (
-	"std-library/logs"
 	"testing"
+
+	"github.com/odycenter/std-library/logs"
 )
 
 func TestDefault(t *testing.T) {

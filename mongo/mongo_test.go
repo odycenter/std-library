@@ -2,12 +2,13 @@ package mongo_test
 
 import (
 	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/event"
 	"log"
-	"std-library/mongo"
 	"testing"
 	"time"
+
+	"github.com/odycenter/std-library/mongo"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/event"
 )
 
 func TestInitNew(t *testing.T) {

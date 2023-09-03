@@ -3,8 +3,9 @@ package ecdsa_test
 import (
 	"encoding/base64"
 	"fmt"
-	"std-library/crypto/ecdsa"
 	"testing"
+
+	"github.com/odycenter/std-library/crypto/ecdsa"
 )
 
 func TestNew(t *testing.T) {

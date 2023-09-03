@@ -3,9 +3,10 @@ package kafka_test
 import (
 	"context"
 	"log"
-	"std-library/kafka"
 	"testing"
 	"time"
+
+	"github.com/odycenter/std-library/kafka"
 )
 
 func TestProducer(t *testing.T) {

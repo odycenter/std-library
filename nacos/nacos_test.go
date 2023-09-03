@@ -2,10 +2,11 @@ package nacos_test
 
 import (
 	"fmt"
-	"github.com/nacos-group/nacos-sdk-go/v2/model"
-	"std-library/nacos"
 	"testing"
 	"time"
+
+	"github.com/nacos-group/nacos-sdk-go/v2/model"
+	"github.com/odycenter/std-library/nacos"
 )
 
 func TestGetConfigClient(t *testing.T) {

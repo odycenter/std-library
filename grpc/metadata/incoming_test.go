@@ -2,8 +2,9 @@ package metadata_test
 
 import (
 	"fmt"
-	"std-library/grpc/metadata"
 	"testing"
+
+	"github.com/odycenter/std-library/grpc/metadata"
 )
 
 func TestGetValues(t *testing.T) {

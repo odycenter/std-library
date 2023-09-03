@@ -2,9 +2,10 @@ package lfu_test
 
 import (
 	"fmt"
-	"std-library/cache/lfu"
 	"testing"
 	"time"
+
+	"github.com/odycenter/std-library/cache/lfu"
 )
 
 func TestLFU(t *testing.T) {

@@ -2,10 +2,11 @@ package stringx_test
 
 import (
 	"fmt"
-	"std-library/stringx"
 	"testing"
 
-	"github.com.tw/odycenter/std-library/array"
+	"github.com/odycenter/std-library/stringx"
+
+	"github.com/odycenter/std-library/array"
 )
 
 func TestTrimHtml(t *testing.T) {

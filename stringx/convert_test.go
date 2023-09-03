@@ -2,8 +2,9 @@ package stringx_test
 
 import (
 	"fmt"
-	"std-library/stringx"
 	"testing"
+
+	"github.com/odycenter/std-library/stringx"
 )
 
 func TestStr2Num(t *testing.T) {

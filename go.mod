@@ -1,4 +1,4 @@
-module github.com.tw/odycenter/std-library
+module github.com/odycenter/std-library
 
 go 1.20
 

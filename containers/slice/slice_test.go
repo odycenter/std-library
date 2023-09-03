@@ -2,8 +2,9 @@ package slice_test
 
 import (
 	"fmt"
-	"std-library/containers/slice"
 	"testing"
+
+	"github.com/odycenter/std-library/containers/slice"
 )
 
 func TestMutex(t *testing.T) {

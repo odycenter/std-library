@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com.tw/odycenter/std-library/array"
+	"github.com/odycenter/std-library/array"
 )
 
 func TestIn(t *testing.T) {

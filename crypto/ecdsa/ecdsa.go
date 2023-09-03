@@ -9,10 +9,11 @@ import (
 	"encoding/pem"
 	"errors"
 	"math/big"
-	"std-library/crypto"
-	"std-library/crypto/sha/sha1"
-	"std-library/crypto/sha/sha256"
-	"std-library/crypto/sha/sha512"
+
+	"github.com/odycenter/std-library/crypto"
+	"github.com/odycenter/std-library/crypto/sha/sha1"
+	"github.com/odycenter/std-library/crypto/sha/sha256"
+	"github.com/odycenter/std-library/crypto/sha/sha512"
 )
 
 type ECDSA struct {

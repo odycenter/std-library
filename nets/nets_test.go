@@ -2,8 +2,9 @@ package nets_test
 
 import (
 	"fmt"
-	"std-library/nets"
 	"testing"
+
+	"github.com/odycenter/std-library/nets"
 )
 
 func TestNets(t *testing.T) {

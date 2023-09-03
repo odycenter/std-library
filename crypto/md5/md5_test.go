@@ -2,8 +2,9 @@ package md5_test
 
 import (
 	"fmt"
-	"std-library/crypto/md5"
 	"testing"
+
+	"github.com/odycenter/std-library/crypto/md5"
 )
 
 func TestMd5(t *testing.T) {

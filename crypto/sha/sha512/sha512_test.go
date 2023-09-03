@@ -2,8 +2,9 @@ package sha512_test
 
 import (
 	"fmt"
-	"std-library/crypto/sha/sha256"
 	"testing"
+
+	"github.com/odycenter/std-library/crypto/sha/sha256"
 )
 
 func TestSha512(t *testing.T) {

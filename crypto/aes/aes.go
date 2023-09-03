@@ -4,7 +4,8 @@ package aes
 import (
 	cptAes "crypto/aes"
 	"crypto/cipher"
-	"std-library/crypto"
+
+	"github.com/odycenter/std-library/crypto"
 )
 
 type Aes struct {

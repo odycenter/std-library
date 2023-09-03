@@ -14,7 +14,8 @@ import (
 	"encoding/pem"
 	"errors"
 	"hash"
-	"std-library/crypto"
+
+	"github.com/odycenter/std-library/crypto"
 )
 
 type Rsa struct {

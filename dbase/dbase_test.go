@@ -2,10 +2,11 @@ package dbase_test
 
 import (
 	"context"
-	"github.com/beego/beego/v2/client/orm"
 	"log"
-	"std-library/dbase"
 	"testing"
+
+	"github.com/beego/beego/v2/client/orm"
+	"github.com/odycenter/std-library/dbase"
 )
 
 type Element struct {

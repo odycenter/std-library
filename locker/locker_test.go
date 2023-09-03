@@ -2,8 +2,9 @@ package locker_test
 
 import (
 	"fmt"
-	"std-library/locker"
 	"testing"
+
+	"github.com/odycenter/std-library/locker"
 )
 
 func TestLocker(t *testing.T) {

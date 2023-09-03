@@ -2,8 +2,9 @@ package websocket_test
 
 import (
 	"log"
-	"std-library/websocket"
 	"testing"
+
+	"github.com/odycenter/std-library/websocket"
 )
 
 func TestConn(t *testing.T) {

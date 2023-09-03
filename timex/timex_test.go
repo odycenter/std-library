@@ -3,9 +3,10 @@ package timex_test
 import (
 	"fmt"
 	"math"
-	"std-library/timex"
 	"testing"
 	"time"
+
+	"github.com/odycenter/std-library/timex"
 )
 
 func TestParse(t *testing.T) {

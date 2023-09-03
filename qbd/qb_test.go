@@ -2,8 +2,9 @@ package qbd_test
 
 import (
 	"fmt"
-	"std-library/qbd"
 	"testing"
+
+	"github.com/odycenter/std-library/qbd"
 )
 
 func TestNewQueryBuilder(t *testing.T) {

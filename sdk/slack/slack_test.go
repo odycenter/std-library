@@ -1,8 +1,9 @@
 package slack_test
 
 import (
-	"std-library/sdk/slack"
 	"testing"
+
+	"github.com/odycenter/std-library/sdk/slack"
 )
 
 func TestNew(t *testing.T) {

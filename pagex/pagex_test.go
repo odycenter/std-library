@@ -2,8 +2,9 @@ package pagex_test
 
 import (
 	"fmt"
-	"std-library/pagex"
 	"testing"
+
+	"github.com/odycenter/std-library/pagex"
 )
 
 func TestNew(t *testing.T) {

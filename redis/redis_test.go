@@ -2,11 +2,12 @@ package redis_test
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"log"
-	"std-library/redis"
 	"testing"
 	"time"
+
+	"github.com/odycenter/std-library/redis"
+	"github.com/pkg/errors"
 )
 
 func TestRedis(t *testing.T) {

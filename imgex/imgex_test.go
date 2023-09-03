@@ -5,8 +5,9 @@ import (
 	"image/jpeg"
 	"os"
 	"path"
-	"std-library/imgex"
 	"testing"
+
+	"github.com/odycenter/std-library/imgex"
 )
 
 func TestCompress(t *testing.T) {

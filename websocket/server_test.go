@@ -3,11 +3,12 @@ package websocket_test
 import (
 	"context"
 	"fmt"
-	"github.com/olahol/melody"
 	"log"
-	"std-library/websocket"
 	"sync"
 	"testing"
+
+	"github.com/odycenter/std-library/websocket"
+	"github.com/olahol/melody"
 )
 
 type Session struct {

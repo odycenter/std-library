@@ -2,9 +2,10 @@ package logs_test
 
 import (
 	"log"
-	"std-library/logs"
 	"testing"
 	"time"
+
+	"github.com/odycenter/std-library/logs"
 )
 
 func TestKafka(t *testing.T) {

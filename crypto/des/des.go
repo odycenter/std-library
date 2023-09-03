@@ -4,7 +4,8 @@ package des
 import (
 	"crypto/cipher"
 	cptDes "crypto/des"
-	"std-library/crypto"
+
+	"github.com/odycenter/std-library/crypto"
 )
 
 type Des struct {
