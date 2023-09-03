@@ -52,7 +52,7 @@ func TestWS(t *testing.T) {
 		sessions.del(ID)
 		fmt.Println("disconnected")
 	})
-	opt.WithOnClose(func(session *melody.Session, i int, s string) error {
+	opt.WithOnClose(func(_ *melody.Session, i int, s string) error {
 		fmt.Printf("closed:%d=>%s\n", i, s)
 		return nil
 	})
