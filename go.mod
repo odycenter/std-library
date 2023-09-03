@@ -1,4 +1,4 @@
-module std-library
+module github.com.tw/odycenter/std-library
 
 go 1.20
 
@@ -32,7 +32,7 @@ require (
 	github.com/takumakei/exif-orientation v0.0.0-20200808061749-30cdc5a97a18
 	github.com/tealeg/xlsx v1.0.5
 	github.com/tidwall/gjson v1.16.0
-	go.mongodb.org/mongo-driver v1.12.1
+	go.mongodb.org/mongo-driver v1.11.9
 	golang.org/x/text v0.12.0
 	google.golang.org/api v0.136.0
 	google.golang.org/grpc v1.57.0

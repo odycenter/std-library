@@ -2,8 +2,9 @@ package array_test
 
 import (
 	"fmt"
-	"std-library/array"
 	"testing"
+
+	"github.com.tw/odycenter/std-library/array"
 )
 
 func TestNums2Strs(t *testing.T) {
