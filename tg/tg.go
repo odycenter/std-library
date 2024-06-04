@@ -28,7 +28,7 @@ func SimpleSendMsg(u, msgType, title, body string) error {
 	q := req.URL.Query()
 	q.Add("type", msgType)
 	q.Add("message", fmt.Sprintf("%s\r\n%s", title, body))
-	req.URL.RawQuery = req.URL.Query().Encode()
+	req.URL.RawQuery = q.Encode()
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err

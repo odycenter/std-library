@@ -3,9 +3,8 @@ package elastic_test
 import (
 	"context"
 	"fmt"
+	"std-library/elastic"
 	"testing"
-
-	"github.com/odycenter/std-library/elastic"
 )
 
 func TestElastic(t *testing.T) {

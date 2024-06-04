@@ -2,10 +2,41 @@ package json_test
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
+	"math/big"
+	"std-library/json"
 	"testing"
-
-	"github.com/odycenter/std-library/json"
 )
+
+type Outer struct {
+	Inner
+}
+
+type Inner struct {
+	Inner string `json:",omitempty"`
+}
+
+type Person struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
+func TestMarshal(t *testing.T) {
+	p := Person{Name: "Iron", Age: 18}
+	assert.Equal(t, `{"name":"Iron","age":18}`, json.String(p))
+
+	outer := Outer{Inner: Inner{Inner: "inner"}}
+	assert.Equal(t, `{"Inner":"inner"}`, json.String(outer))
+}
+
+func TestUnmarshal(t *testing.T) {
+	jsonStr := `{"name":"Iron","age":18}`
+	var p Person
+	json.Parse(jsonStr, &p)
+
+	assert.Equal(t, "Iron", p.Name)
+	assert.Equal(t, 18, p.Age)
+}
 
 func TestParse(t *testing.T) {
 	var st = struct {
@@ -104,4 +135,69 @@ func TestRawMessage(t *testing.T) {
 	fmt.Println(v)
 	fmt.Println(string(json.Stringify(v)))
 	fmt.Println(json.String(v))
+
+	jsonStr := `{"name":"Iron","details":{"age":37,"city":"Taoyuan City"}}`
+	type Person struct {
+		Name    string          `json:"name"`
+		Details json.RawMessage `json:"details"`
+	}
+
+	var p Person
+	json.Parse([]byte(jsonStr), &p)
+
+	expected := `{"age":37,"city":"Taoyuan City"}`
+	if string(p.Details) != expected {
+		t.Errorf("Expected %s, got %s", expected, string(p.Details))
+	}
+}
+
+func TestNumber(t *testing.T) {
+	jsonStr := `{"value":12345678901234567890}`
+	var data map[string]big.Int
+	json.Parse(jsonStr, &data)
+	expected := new(big.Int)
+	expected.SetString("12345678901234567890", 10)
+	assert.Equal(t, *expected, data["value"])
+}
+
+var p = Person{Name: "Iron", Age: 37}
+
+func BenchmarkMarshal(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		json.String(p)
+	}
+}
+
+func BenchmarkUnmarshal(b *testing.B) {
+	jsonStr := `{"name":"Iron","age":37}`
+	var p Person
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		json.Parse([]byte(jsonStr), &p)
+	}
+}
+
+//func BenchmarkNumber(b *testing.B) {
+//	jsonStr := `{"value":12345678901234567890}`
+//	var data map[string]gojson.Number
+//
+//	b.ResetTimer()
+//	for i := 0; i < b.N; i++ {
+//		gojson.Unmarshal([]byte(jsonStr), &data)
+//	}
+//}
+
+func BenchmarkRawMessage(b *testing.B) {
+	jsonStr := `{"name":"Iron","details":{"age":37,"city":"Taoyuan City"}}`
+	type Person struct {
+		Name    string          `json:"name"`
+		Details json.RawMessage `json:"details"`
+	}
+	var p Person
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		json.Parse([]byte(jsonStr), &p)
+	}
 }

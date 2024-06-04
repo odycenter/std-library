@@ -2,9 +2,8 @@ package grpc_test
 
 import (
 	"fmt"
+	"std-library/grpc"
 	"testing"
-
-	"github.com/odycenter/std-library/grpc"
 )
 
 func TestGRPC(t *testing.T) {

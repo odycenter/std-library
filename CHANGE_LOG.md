@@ -61,3 +61,22 @@
 - redis添加非严格操作HSETEX
 ### V1.0.2
 ***
+- 添加图片图层叠加
+- 删除searcher，有内存管理问题且已停止维护
+- 整理resize到image
+- logs添加日志等级颜色
+- 封装email
+- 添加regexp扩展库，用以处理某些需要用到回溯算法的场景
+- mongo为应对配置未配置别名导致逻辑调用时可能panic，在初始化时禁止了重复别名配置注册
+- dbase orm Debug log 可以指定log func
+- go mod update
+- ~~timex 某些函数去除 time.Local 的依赖，如果需要使用parse\parseT时使用非UTC时区，请务必使用ParseInLoc\ParseTInLoc指定时区~~
+- redis HsetEx() 修改实现方式
+- timex BetweenDT() 返回值修改，现在如果传入的时间日期和指定的格式不相符，会在最后结果返回0值
+- 修复kafka Producer BatchSize默认值错误，并添加BatchBytes配置和默认值
+- timex的 parse 和 parseT 统一使用OS的 Location 时区，如需使用 UTC 时区可使用 time 包的 Parse
+- 添加zip操作
+- stringx添加HiddenUnknown
+- -go mod update
+- mongo添加前置和后置处理回调
+- mongo添加加密映射表

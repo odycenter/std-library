@@ -2,9 +2,8 @@ package bloom_test
 
 import (
 	"fmt"
+	"std-library/redis/bloom"
 	"testing"
-
-	"github.com/odycenter/std-library/redis/bloom"
 )
 
 func TestBloom(t *testing.T) {

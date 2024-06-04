@@ -3,10 +3,9 @@ package timex_test
 import (
 	"fmt"
 	"math"
+	"std-library/timex"
 	"testing"
 	"time"
-
-	"github.com/odycenter/std-library/timex"
 )
 
 func TestParse(t *testing.T) {
@@ -66,9 +65,39 @@ func TestTimeGenerator(t *testing.T) {
 }
 
 func TestBetween(t *testing.T) {
-	b := timex.Between(timex.ZeroTime(), timex.ZeroTime().Add(time.Hour*24*7))
+	b := timex.Between(timex.ZeroTime().Add(time.Hour*24*7), timex.ZeroTime())
 	fmt.Println(b.Second())
 	fmt.Println(b.Minute())
 	fmt.Println(b.Day())
 	fmt.Println(b.Duration())
+}
+
+func TestBetweenT(t *testing.T) {
+	b := timex.BetweenDT("2018-01-07", "2018-01-01", time.DateOnly)
+	fmt.Println(b.Second())
+	fmt.Println(b.Minute())
+	fmt.Println(b.Day())
+	fmt.Println(b.Duration())
+}
+
+func TestDurSec(t *testing.T) {
+	fmt.Println(timex.DurSec(10))
+}
+
+func TestDurMin(t *testing.T) {
+	fmt.Println(timex.DurMin(10))
+}
+
+func TestDurHour(t *testing.T) {
+	fmt.Println(timex.DurHour(10))
+}
+
+func TestTimeZone(t *testing.T) {
+	fmt.Println(timex.Parse("2021-12-19 8:36:29", "2006-01-02 15:04:05"))
+	fmt.Println(timex.ParseT("2021-12-19 8:36:29", "2006-01-02 15:04:05"))
+	fmt.Println(timex.ParseInLoc("2021-12-19 8:36:29", "2006-01-02 15:04:05", nil))
+	fmt.Println(timex.ParseTInLoc("2021-12-19 8:36:29", "2006-01-02 15:04:05", nil))
+	loc := timex.LoadLocation(timex.TW)
+	fmt.Println(timex.ParseInLoc("2021-12-19 8:36:29", "2006-01-02 15:04:05", loc))
+	fmt.Println(timex.ParseTInLoc("2021-12-19 8:36:29", "2006-01-02 15:04:05", loc))
 }

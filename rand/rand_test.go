@@ -2,10 +2,9 @@ package rand_test
 
 import (
 	"fmt"
+	"std-library/rand"
 	"testing"
 	"time"
-
-	"github.com/odycenter/std-library/rand"
 )
 
 func TestRand(t *testing.T) {

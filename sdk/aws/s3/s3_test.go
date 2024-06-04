@@ -1,9 +1,8 @@
 package s3_test
 
 import (
+	awss3 "std-library/sdk/aws/s3"
 	"testing"
-
-	awss3 "github.com/odycenter/std-library/sdk/aws/s3"
 )
 
 func TestNew(t *testing.T) {

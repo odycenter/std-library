@@ -11,13 +11,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
+	app "std-library/app/conf"
 	"sync"
 	"time"
 )
 
-var pool sync.Map //map[string]*mongo.Client
-
+var pool sync.Map                         //map[string]*mongo.Client
+var CryptoMap *sync.Map                   //*sync.Map[string]*sync.Map[string]*[]string -> map[db]map[coll][fields...]
+var globalOpts = new(GlobalOptions)       //全局操作
 var ErrNoDocuments = mongo.ErrNoDocuments //mongo无记录错误，方便做error判断
+var defaultTimeout = 180 * time.Second
 
 // Opt 配置结构
 type Opt struct {
@@ -27,11 +30,13 @@ type Opt struct {
 	ReadPreference    *readpref.ReadPref `json:"-"`
 	MaxPoolSize       uint64
 	MinPoolSize       uint64
-	HeartbeatInterval time.Duration      `json:"-"`
-	MaxConnecting     uint64             //default is 2. Values greater than 100 are not recommended
-	MaxConnIdleTime   time.Duration      `json:"-"` //default is 0, meaning a connection can remain unused indefinitely.
-	PoolMonitor       *event.PoolMonitor `json:"-"`
-	SocketTimeout     time.Duration      `json:"-"` //default is 0, meaning no timeout is used and socket operations can block indefinitely.
+	HeartbeatInterval time.Duration         `json:"-"`
+	MaxConnecting     uint64                //default is 2. Values greater than 100 are not recommended
+	MaxConnIdleTime   time.Duration         `json:"-"` //default is 0, meaning a connection can remain unused indefinitely.
+	PoolMonitor       *event.PoolMonitor    `json:"-"` //mongo线程池监听
+	CommandMonitor    *event.CommandMonitor `json:"-"` //mongo命令事件监听
+	SocketTimeout     time.Duration         `json:"-"` //default is 0, meaning no timeout is used and socket operations can block indefinitely.
+	Timeout           time.Duration         `json:"-"`
 }
 
 // Cli mongo客户端封装
@@ -55,6 +60,36 @@ func (opt *Opt) WithPoolMonitor(monitor *event.PoolMonitor) *Opt {
 	return opt
 }
 
+// SetPreExec 设置前置拦截器
+func SetPreExec(f FilterFunc) {
+	globalOpts.setPreExec(f)
+}
+
+// SetAfterExec 设置后置拦截器
+func SetAfterExec(f FilterFunc) {
+	globalOpts.setAfterExec(f)
+}
+
+// SetCryptoMap 设置加密映射表
+func SetCryptoMap(m map[string]map[string][]string) {
+	if m == nil {
+		return
+	}
+	dbM := sync.Map{}
+	for dbK, dbV := range m {
+		collM := sync.Map{}
+		for collK, fields := range dbV {
+			var tmp []string
+			copy(tmp, fields)
+			collM.Store(collK, tmp)
+			//collM.Store(collK, slices.Clone(fields))
+		}
+		dbM.Store(dbK, &collM)
+	}
+	CryptoMap = &dbM
+	return
+}
+
 func (opt *Opt) getAliasName() string {
 	if opt.AliasName == "" {
 		return "default"
@@ -76,16 +111,75 @@ func (opt *Opt) getMaxConnecting() uint64 {
 	return opt.MaxConnecting
 }
 
+func GetCrypto(db, coll string) []string {
+	if CryptoMap == nil {
+		return nil
+	}
+	collM, ok := CryptoMap.Load(db)
+	if !ok {
+		return nil
+	}
+	collSM, ok := collM.(*sync.Map)
+	if !ok {
+		return nil
+	}
+	fields, ok := collSM.Load(coll)
+	if !ok {
+		return nil
+	}
+	fieldsS, ok := fields.([]string)
+	if !ok {
+		return nil
+	}
+	return fieldsS
+}
+
+func IsCrypto(db, coll, field string) bool {
+	if CryptoMap == nil {
+		return false
+	}
+	collM, ok := CryptoMap.Load(db)
+	if !ok {
+		return false
+	}
+	collSM, ok := collM.(*sync.Map)
+	if !ok {
+		return false
+	}
+	fields, ok := collSM.Load(coll)
+	if !ok {
+		return false
+	}
+	fieldsS, ok := fields.([]string)
+	if !ok {
+		return false
+	}
+	for _, f := range fieldsS {
+		if f == field {
+			return true
+		}
+	}
+	return false
+}
+
 // Init 初始化连接池
 func Init(opts ...*Opt) {
 	for _, opt := range opts {
+		if _, ok := pool.Load(opt.getAliasName()); ok {
+			log.Panicf("[mongo]Mongo <%s> already registered\n", opt.getAliasName())
+		}
 		pool.Store(opt.getAliasName(), newCli(opt))
 	}
+}
+
+func InitMigration(client *mongo.Client) {
+	pool.Store("default", client)
 }
 
 // 创建连接
 func newCli(opt *Opt) *mongo.Client {
 	cliOp := options.Client().ApplyURI(opt.getUri())
+	cliOp.AppName = &app.Name
 	if opt.SkipTLSVerify {
 		cliOp.SetTLSConfig(&tls.Config{InsecureSkipVerify: true})
 	}
@@ -98,11 +192,19 @@ func newCli(opt *Opt) *mongo.Client {
 		cliOp.SetHeartbeatInterval(opt.HeartbeatInterval)
 	}
 	cliOp.SetMaxConnecting(opt.getMaxConnecting())
+	if opt.MaxConnIdleTime == 0 {
+		opt.MaxConnIdleTime = 30 * time.Minute
+	}
 	cliOp.SetMaxConnIdleTime(opt.MaxConnIdleTime)
 	cliOp.SetPoolMonitor(opt.PoolMonitor)
+	cliOp.SetMonitor(opt.CommandMonitor)
 	cliOp.SetSocketTimeout(opt.SocketTimeout)
 	cliOp.SetRetryReads(true)
 	cliOp.SetRetryWrites(true)
+	if opt.Timeout <= 0 {
+		opt.Timeout = defaultTimeout
+	}
+	cliOp.SetTimeout(opt.Timeout)
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 	c, err := mongo.Connect(ctx, cliOp)
@@ -140,16 +242,6 @@ func GenObjectID() primitive.ObjectID {
 // GenObjectIDFromTimestamp 使用指定时间戳生成objectId
 func GenObjectIDFromTimestamp(ts time.Time) primitive.ObjectID {
 	return primitive.NewObjectIDFromTimestamp(ts)
-}
-
-func (c *Cli) new() *Cli {
-	return &Cli{
-		AliasName: c.AliasName,
-		db:        c.db,
-		dbOpt:     nil,
-		collOpt:   nil,
-		ctx:       nil,
-	}
 }
 
 // WithDBOpt 为当前选到的连接对象，使用DatabaseOptions配置参数
@@ -217,7 +309,7 @@ func (c *Cli) Indexes(db, coll string, idxes []IndexModel, opts ...*options.Crea
 // 有关该命令的更多信息，请参阅 https://www.mongodb.com/docs/manual/reference/command/find/。
 func (c *Cli) Find(db, coll string, filter any, opts ...*options.FindOptions) (*Cursor, error) {
 	cursor, err := c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).Find(c.getCtx(), filter, opts...)
-	return &Cursor{cursor}, err
+	return &Cursor{cursor, db, coll}, err
 }
 
 // FindOne 执行查找命令并为集合中的一个文档返回SingleResult
@@ -230,7 +322,7 @@ func (c *Cli) Find(db, coll string, filter any, opts ...*options.FindOptions) (*
 //
 // 有关该命令的更多信息，请参阅 https://www.mongodb.com/docs/manual/reference/command/find/。
 func (c *Cli) FindOne(db, coll string, filter any, opts ...*options.FindOneOptions) *SingleResult {
-	return &SingleResult{c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).FindOne(c.getCtx(), filter, opts...)}
+	return &SingleResult{c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).FindOne(c.getCtx(), filter, opts...), db, coll}
 }
 
 // FindOneAndUpdate 执行 findAndModify 命令以更新集合中至多一个文档，并返回更新前出现的文档。
@@ -245,7 +337,10 @@ func (c *Cli) FindOne(db, coll string, filter any, opts ...*options.FindOneOptio
 //
 // 有关该命令的更多信息，请参阅 https://www.mongodb.com/docs/manual/reference/command/findAndModify/。
 func (c *Cli) FindOneAndUpdate(db, coll string, filter, update any, opts ...*options.FindOneAndUpdateOptions) *SingleResult {
-	return &SingleResult{c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).FindOneAndUpdate(c.getCtx(), filter, update, opts...)}
+	if err := globalOpts.getPreExec()(db, coll, update); err != nil {
+		return nil
+	}
+	return &SingleResult{c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).FindOneAndUpdate(c.getCtx(), filter, update, opts...), db, coll}
 }
 
 // FindOneAndReplace 执行 findAndModify 命令以替换集合中至多一个文档，并返回替换前出现的文档。
@@ -260,7 +355,10 @@ func (c *Cli) FindOneAndUpdate(db, coll string, filter, update any, opts ...*opt
 //
 // 有关该命令的更多信息，请参阅 https://www.mongodb.com/docs/manual/reference/command/findAndModify/。
 func (c *Cli) FindOneAndReplace(db, coll string, filter, replacement any, opts ...*options.FindOneAndReplaceOptions) *SingleResult {
-	return &SingleResult{c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).FindOneAndReplace(c.getCtx(), filter, replacement, opts...)}
+	if err := globalOpts.getPreExec()(db, coll, replacement); err != nil {
+		return nil
+	}
+	return &SingleResult{c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).FindOneAndReplace(c.getCtx(), filter, replacement, opts...), db, coll}
 }
 
 // FindOneAndDelete 执行 findAndModify 命令以删除集合中至多一个文档。并返回删除前出现的文档。
@@ -273,7 +371,7 @@ func (c *Cli) FindOneAndReplace(db, coll string, filter, replacement any, opts .
 //
 // 有关该命令的更多信息，请参阅 https://www.mongodb.com/docs/manual/reference/command/findAndModify/。
 func (c *Cli) FindOneAndDelete(db, coll string, filter any, opts ...*options.FindOneAndDeleteOptions) *SingleResult {
-	return &SingleResult{c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).FindOneAndDelete(c.getCtx(), filter, opts...)}
+	return &SingleResult{c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).FindOneAndDelete(c.getCtx(), filter, opts...), db, coll}
 }
 
 // Exists 判断符合条件的文档是否存在，只返回是否存在
@@ -317,6 +415,9 @@ func (c *Cli) EExists(db, coll string, filter any, opts ...*options.FindOneOptio
 //
 // 有关该命令的更多信息，请参阅 https://www.mongodb.com/docs/manual/reference/command/update/。
 func (c *Cli) Update(db, coll string, filter, update any, opts ...*options.UpdateOptions) (*UpdateResult, error) {
+	if err := globalOpts.getPreExec()(db, coll, update); err != nil {
+		return nil, err
+	}
 	result, err := c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).UpdateMany(c.getCtx(), filter, update, opts...)
 	return &UpdateResult{result}, err
 }
@@ -330,6 +431,9 @@ func (c *Cli) Update(db, coll string, filter, update any, opts ...*options.Updat
 // opts 参数可用于指定操作选项（请参阅 options.UpdateOptions 文档）。
 // 有关该命令的更多信息，请参阅 https://www.mongodb.com/docs/manual/reference/command/update/.。
 func (c *Cli) UpdateOne(db, coll string, filter, update any, opts ...*options.UpdateOptions) (*UpdateResult, error) {
+	if err := globalOpts.getPreExec()(db, coll, update); err != nil {
+		return nil, err
+	}
 	result, err := c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).UpdateOne(c.getCtx(), filter, update, opts...)
 	return &UpdateResult{result}, err
 }
@@ -345,6 +449,9 @@ func (c *Cli) UpdateOne(db, coll string, filter, update any, opts ...*options.Up
 //
 // 有关该命令的更多信息，请参阅 https://www.mongodb.com/docs/manual/reference/command/update/。
 func (c *Cli) UpdateByID(db, coll string, id, update any, opts ...*options.UpdateOptions) (*UpdateResult, error) {
+	if err := globalOpts.getPreExec()(db, coll, update); err != nil {
+		return nil, err
+	}
 	result, err := c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).UpdateByID(c.getCtx(), id, update, opts...)
 	return &UpdateResult{result}, err
 }
@@ -358,6 +465,9 @@ func (c *Cli) UpdateByID(db, coll string, id, update any, opts ...*options.Updat
 //
 // 有关该命令的更多信息，请参阅 https://www.mongodb.com/docs/manual/reference/command/insert/
 func (c *Cli) InsertMany(db, coll string, documents []any, opts ...*options.InsertManyOptions) (*InsertManyResult, error) {
+	if err := globalOpts.getPreExec()(db, coll, documents...); err != nil {
+		return nil, err
+	}
 	result, err := c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).InsertMany(c.getCtx(), documents, opts...)
 	return &InsertManyResult{result}, err
 }
@@ -371,8 +481,11 @@ func (c *Cli) InsertMany(db, coll string, documents []any, opts ...*options.Inse
 // opts 参数可用于指定操作的选项（请参阅 options.InsertOneOptions 文档。）
 //
 // 有关该命令的更多信息，请参阅 https://www.mongodb.com/docs/manual/reference/command/insert/
-func (c *Cli) InsertOne(db, coll string, documents any, opts ...*options.InsertOneOptions) (*InsertOneResult, error) {
-	result, err := c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).InsertOne(c.getCtx(), documents, opts...)
+func (c *Cli) InsertOne(db, coll string, document any, opts ...*options.InsertOneOptions) (*InsertOneResult, error) {
+	if err := globalOpts.getPreExec()(db, coll, document); err != nil {
+		return nil, err
+	}
+	result, err := c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).InsertOne(c.getCtx(), document, opts...)
 	return &InsertOneResult{result}, err
 }
 
@@ -432,7 +545,7 @@ func (c *Cli) EstimatedCount(db, coll string, opts ...*options.EstimatedDocument
 // 有关该命令的更多信息，请参阅 https://www.mongodb.com/docs/manual/reference/command/aggregate/ 。
 func (c *Cli) Aggregate(db, coll string, pip any, opts ...*options.AggregateOptions) (*Cursor, error) {
 	cursor, err := c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).Aggregate(c.getCtx(), pip, opts...)
-	return &Cursor{cursor}, err
+	return &Cursor{cursor, db, coll}, err
 }
 
 // Distinct 执行不同的命令以查找集合中指定字段的唯一值。
@@ -448,6 +561,14 @@ func (c *Cli) Distinct(db, coll string, fieldName string, filter any, opts ...*o
 	return c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).Distinct(c.getCtx(), fieldName, filter, opts...)
 }
 
+// BulkWrite 执行批量写入操作 https://www.mongodb.com/docs/manual/core/bulk-write-operations/ 。
+// models 参数必须是要在此批量写入中执行的 slice 。它不能为零或为 nil。所有模型都必须非 nil。
+// mongo.WriteModel 文档提供有效模型类型的列表以及如何使用它们的示例。已在 func 中提供
+// opts 参数可用于指定操作的选项（请参阅 options.BulkWriteOptions 文档。）
+func (c *Cli) BulkWrite(db, coll string, models []mongo.WriteModel, opts ...*options.BulkWriteOptions) (*mongo.BulkWriteResult, error) {
+	return c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).BulkWrite(c.getCtx(), models, opts...)
+}
+
 // Watch 为相应集合上的所有更改返回一个更改流。
 //
 // 有关更改流的更多信息，请参阅 https://www.mongodb.com/docs/manual/changeStreams/ 。
@@ -460,14 +581,14 @@ func (c *Cli) Distinct(db, coll string, fieldName string, filter any, opts ...*o
 // opts 参数可用于指定更改流创建的选项（请参阅选项 options.ChangeStreamOptions 文档）。
 func (c *Cli) Watch(db, coll string, pip any, opts ...*options.ChangeStreamOptions) (*ChangeStream, error) {
 	result, err := c.db.Database(db, c.getDBOpt()).Collection(coll, c.getCollOpt()).Watch(c.getCtx(), pip, opts...)
-	return &ChangeStream{result}, err
+	return &ChangeStream{result, db, coll}, err
 }
 
 // RunCommand 对数据库执行给定的命令。此函数不服从数据库的读取首选项。要指定读取首选项，必须使用 RunCmdOptions.ReadPreference 选项。
 //
 // runCommand 参数必须是要执行的命令的文档。不能为nil。这必须是保序类型，例如 bson.D。
 //
-// bson.M 等地图类型无效。
+// bson.M 等map类型无效。
 //
 // opts 参数可用于指定此操作的选项（请参阅 options.RunCmdOptions 文档）。
 // 如果命令文档包含以下任何内容，则 RunCommand 的行为未定义：
@@ -475,7 +596,7 @@ func (c *Cli) Watch(db, coll string, pip any, opts ...*options.ChangeStreamOptio
 //   - 当已在客户端上声明 API 版本时的 API 版本控制选项
 //   - 当在客户端上设置超时时的 maxTimeMS
 func (c *Cli) RunCommand(db string, runCommand any, opts ...*options.RunCmdOptions) *SingleResult {
-	return &SingleResult{c.db.Database(db, c.getDBOpt()).RunCommand(c.getCtx(), runCommand, opts...)}
+	return &SingleResult{c.db.Database(db, c.getDBOpt()).RunCommand(c.getCtx(), runCommand, opts...), "", ""}
 }
 
 // SessionContext 事务结构

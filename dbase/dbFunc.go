@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/beego/beego/v2/client/orm"
+	"std-library/logs"
+	"time"
 )
 
 // ErrorFieldsIllegal 查询参数错误
@@ -122,6 +124,15 @@ func (d *DB) Delete(i any, fields ...string) (rows int64, err error) {
 	return d.DeleteWithCtx(d.getCtx(), i, fields...)
 }
 
+// DeleteMany 按条件删除多条数据
+func (d *DB) DeleteMany(i any, filters ...any) (rows int64, err error) {
+	q := d.QueryTableWithCtx(d.getCtx(), i)
+	for i := 0; i < len(filters)/2; i++ {
+		q = q.Filter(filters[i*2].(string), filters[i*2+1])
+	}
+	return q.Delete()
+}
+
 // Count 数量
 func (d *DB) Count(i any, fields ...any) (count int64, err error) {
 	err = verifyFields(fields)
@@ -138,8 +149,20 @@ func (d *DB) Count(i any, fields ...any) (count int64, err error) {
 
 // Begin 创建事务
 func (d *DB) Begin() (*TxOrm, error) {
-	tx, err := d.Ormer.BeginWithCtx(d.getCtx())
+	ctx, cancel := context.WithTimeout(d.getCtx(), 60*time.Second)
+	chErr := make(chan error)
+	go func() {
+		select {
+		case <-ctx.Done():
+			logs.Debug("tx process done")
+		case err := <-chErr:
+			logs.Error("tx process fail, error:", err)
+			cancel()
+		}
+	}()
+	tx, err := d.Ormer.BeginWithCtx(ctx)
 	if err != nil {
+		chErr <- err
 		return nil, err
 	}
 	return &TxOrm{TxOrmer: tx}, nil
@@ -150,4 +173,60 @@ func (d *DB) Tx(fn func(ctx context.Context, tx *TxOrm) error) error {
 	return d.DoTx(func(ctx context.Context, txOrm orm.TxOrmer) error {
 		return fn(ctx, &TxOrm{TxOrmer: txOrm})
 	})
+}
+
+// Filter 查询结构
+type Filter struct {
+	orm.QuerySeter
+	e error
+}
+
+// Filter 简单的orm查询
+// i: orm已注册的models
+// filters: 必须是 key1,value1,key2,value2 形式键值对，且key必须为string
+//
+//	filters支持orm表达式形式，例如：
+//
+//	user_name__exact
+//	user_name__iexact
+//	user_name__strictexact
+//	user_name__contains
+//	user_name__icontains
+//	status__gt
+//	status__gte
+//	status__lt
+//	status__lte
+//	user_name__startswith
+//	user_name__istartswith
+//	user_name__endswith
+//	user_name__iendswith
+//	profile__isnull
+//	status__in
+//	id__between
+//	...
+func (d *DB) Filter(i any, filters ...any) *Filter {
+	length := len(filters)
+	if length%2 != 0 {
+		return &Filter{nil, errors.New("filters are not paired")}
+	}
+	q := d.QueryTableWithCtx(d.getCtx(), i)
+	for i := 0; i < length/2; i++ {
+		q = q.Filter(filters[i*2].(string), filters[i*2+1])
+	}
+	return &Filter{QuerySeter: q}
+}
+
+// FilterRaw 简单的orm查询
+//
+// i: orm已注册的models
+// k,con:
+// "user_name", "= 'slene'"
+// "status", "IN (1, 2)"
+// "profile_id", "IN (SELECT id FROM user_profile WHERE age=30)"
+//
+//	filters支持orm表达式形式，详见 Filter 描述
+func (d *DB) FilterRaw(i any, k string, con string) *Filter {
+	q := d.QueryTableWithCtx(d.getCtx(), i)
+	q = q.FilterRaw(k, con)
+	return &Filter{QuerySeter: q}
 }

@@ -142,3 +142,21 @@ func each[T Numeric](s []string, fn func(e string) T) (rs []T) {
 	}
 	return rs
 }
+
+// Flatten 将map展开为对应类型数组
+// map[string]int => []int
+func Flatten[K comparable, V any](m map[K]V) (vs []V) {
+	for _, v := range m {
+		vs = append(vs, v)
+	}
+	return vs
+}
+
+// FlattenAny 将map展开为interface数组
+// map[string]int => []interface{}
+func FlattenAny[K comparable, V any](m map[K]V) (vs []any) {
+	for _, v := range m {
+		vs = append(vs, v)
+	}
+	return vs
+}

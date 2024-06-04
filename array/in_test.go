@@ -2,9 +2,8 @@ package array_test
 
 import (
 	"fmt"
+	"std-library/array"
 	"testing"
-
-	"github.com/odycenter/std-library/array"
 )
 
 func TestIn(t *testing.T) {

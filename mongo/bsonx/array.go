@@ -1,4 +1,4 @@
-package bsonx // Package bsonx import "github.com/odycenter/std-library/mongo/bsonx"
+package bsonx // Package bsonx import "std-library/mongo/bsonx"
 
 import (
 	"bytes"

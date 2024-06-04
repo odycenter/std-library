@@ -3,8 +3,9 @@ package pyroscope
 
 import (
 	"fmt"
-	"github.com/pyroscope-io/client/pyroscope"
+	"github.com/grafana/pyroscope-go"
 	"runtime"
+	"std-library/logs"
 )
 
 var p *pyroscope.Profiler
@@ -24,6 +25,7 @@ func Start(cfg *Config) {
 		fmt.Println("pyroscope not configuration")
 		return
 	}
+	logs.Info("[pyroscope] start with address: %s", cfg.ServerAddress)
 	if cfg.LogLevel == 0 {
 		cfg.LogLevel = LevelDebug
 	}
@@ -64,6 +66,9 @@ func Start(cfg *Config) {
 
 // Stop 停止pyroscope
 func Stop() {
+	if p == nil {
+		return
+	}
 	e := p.Stop()
 	if e != nil {
 		fmt.Println("pyroscope stop failed:", e)

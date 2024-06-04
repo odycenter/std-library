@@ -1,10 +1,9 @@
 package tg_test
 
 import (
-	"testing"
-
 	tgBotApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/odycenter/std-library/sdk/tg"
+	"std-library/sdk/tg"
+	"testing"
 )
 
 func TestTG(t *testing.T) {

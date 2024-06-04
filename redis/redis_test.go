@@ -2,12 +2,11 @@ package redis_test
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"log"
+	"std-library/redis"
 	"testing"
 	"time"
-
-	"github.com/odycenter/std-library/redis"
-	"github.com/pkg/errors"
 )
 
 func TestRedis(t *testing.T) {
@@ -46,4 +45,21 @@ func TestRedis(t *testing.T) {
 		err = nil
 	}
 	log.Println("-2-:", s)
+	//err = redis.RDB().WithCtx(ctx).Set("A", time.Now().Format(time.RFC850), 10*time.Second)
+	err = redis.RDB().WithCtx(ctx).Set("A", time.Now().Format(time.RFC850), 2)
+	if err != nil {
+		if err != redis.Nil {
+			log.Fatal(errors.Wrap(err, "Redis set failed"))
+		}
+		err = nil
+	}
+	time.Sleep(time.Second * 2)
+	s, err = redis.RDB().WithCtx(ctx).Get("A")
+	if err != nil {
+		if err != redis.Nil {
+			log.Fatal(errors.Wrap(err, "Redis get failed"))
+		}
+		err = nil
+	}
+	log.Println("-3-:", s)
 }

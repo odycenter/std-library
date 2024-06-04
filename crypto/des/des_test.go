@@ -2,10 +2,9 @@ package des_test
 
 import (
 	"fmt"
+	"std-library/crypto"
+	"std-library/crypto/des"
 	"testing"
-
-	"github.com/odycenter/std-library/crypto"
-	"github.com/odycenter/std-library/crypto/des"
 )
 
 func TestDes_Encrypt(t *testing.T) {

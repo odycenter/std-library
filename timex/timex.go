@@ -132,14 +132,15 @@ var presetLayouts = []string{
 
 // Parse 日期转其他类型值
 func Parse(dt, layout string, compatible ...bool) *T {
+	var t time.Time
 	if dt == "" {
 		return &T{0}
 	}
-	t, err := time.ParseInLocation(layout, dt, time.Local)
+	t, err := time.ParseInLocation(layout, dt, LoadLocation())
 	if err != nil {
 		if len(compatible) != 0 && compatible[0] {
 			for _, presetLayout := range presetLayouts {
-				if t, e := time.ParseInLocation(presetLayout, dt, time.Local); e == nil {
+				if t, e := time.ParseInLocation(presetLayout, dt, LoadLocation()); e == nil {
 					return &T{t.Unix()}
 				}
 			}
@@ -155,11 +156,11 @@ func ParseT(dt, layout string, compatible ...bool) *time.Time {
 	if dt == "" {
 		return nil
 	}
-	t, err := time.ParseInLocation(layout, dt, time.Local)
+	t, err := time.ParseInLocation(layout, dt, LoadLocation())
 	if err != nil {
 		if len(compatible) != 0 && compatible[0] {
 			for _, presetLayout := range presetLayouts {
-				if t, e := time.ParseInLocation(presetLayout, dt, time.Local); e == nil {
+				if t, e := time.ParseInLocation(presetLayout, dt, LoadLocation()); e == nil {
 					return &t
 				}
 			}
@@ -172,6 +173,7 @@ func ParseT(dt, layout string, compatible ...bool) *time.Time {
 
 // ParseInLoc 日期转其他类型值并使用location
 func ParseInLoc(dt, layout string, loc *time.Location, compatible ...bool) *T {
+	var t time.Time
 	if loc == nil {
 		loc = LoadLocation()
 	}
@@ -182,7 +184,7 @@ func ParseInLoc(dt, layout string, loc *time.Location, compatible ...bool) *T {
 	if err != nil {
 		if len(compatible) != 0 && compatible[0] {
 			for _, presetLayout := range presetLayouts {
-				if t, e := time.ParseInLocation(presetLayout, dt, time.Local); e == nil {
+				if t, e := time.ParseInLocation(presetLayout, dt, loc); e == nil {
 					return &T{t.Unix()}
 				}
 			}
@@ -195,6 +197,7 @@ func ParseInLoc(dt, layout string, loc *time.Location, compatible ...bool) *T {
 
 // ParseTInLoc 日期转时间对象 time.Time 并使用location
 func ParseTInLoc(dt, layout string, loc *time.Location, compatible ...bool) *time.Time {
+	var t time.Time
 	if loc == nil {
 		loc = LoadLocation()
 	}
@@ -205,7 +208,7 @@ func ParseTInLoc(dt, layout string, loc *time.Location, compatible ...bool) *tim
 	if err != nil {
 		if len(compatible) != 0 && compatible[0] {
 			for _, presetLayout := range presetLayouts {
-				if t, e := time.ParseInLocation(presetLayout, dt, time.Local); e == nil {
+				if t, e := time.ParseInLocation(presetLayout, dt, loc); e == nil {
 					return &t
 				}
 			}
@@ -424,67 +427,91 @@ func Range(begin, end time.Time, step time.Duration) *RTG {
 }
 
 type BWT struct {
-	d time.Duration
+	d *time.Duration
 }
 
 // Nanoseconds 转为纳秒(ns)
 func (b *BWT) Nanoseconds() int {
+	if b.d == nil {
+		return 0
+	}
 	return int(b.d.Nanoseconds())
 }
 
 // Microseconds 转为微秒(μs)
 func (b *BWT) Microseconds() int {
+	if b.d == nil {
+		return 0
+	}
 	return int(b.d.Microseconds())
 }
 
 // Milliseconds 转为毫秒(ms)
 func (b *BWT) Milliseconds() int {
+	if b.d == nil {
+		return 0
+	}
 	return int(b.d.Milliseconds())
 }
 
 // Second 转为秒(s)
 func (b *BWT) Second() int {
+	if b.d == nil {
+		return 0
+	}
 	return int(math.Ceil(b.d.Seconds()))
 }
 
 // Minute 转为分(min.)
 func (b *BWT) Minute() int {
+	if b.d == nil {
+		return 0
+	}
 	return int(math.Ceil(b.d.Minutes()))
 }
 
 // Hour 转为小时(hr.)
 func (b *BWT) Hour() int {
+	if b.d == nil {
+		return 0
+	}
 	return int(math.Ceil(b.d.Hours()))
 }
 
 // Day 转为天(day)
 func (b *BWT) Day() int {
+	if b.d == nil {
+		return 0
+	}
 	return int(math.Ceil(b.d.Hours() / 24))
 }
 
 // Duration 返回Dur对象
 func (b *BWT) Duration() time.Duration {
-	return b.d
+	if b.d == nil {
+		return 0
+	}
+	return *b.d
 }
 
 // Between 两个时间的差
 func Between(a, b time.Time) *BWT {
 	d := a.Sub(b)
-	return &BWT{d}
+	return &BWT{&d}
 }
 
 // BetweenDT 两个时间DataTime的差
 func BetweenDT(adt, bdt, layout string) *BWT {
 	a, err := time.Parse(layout, adt)
 	if err != nil {
-		return nil
+		return &BWT{nil}
 	}
 	b, err := time.Parse(layout, bdt)
 	if err != nil {
-		return nil
+		return &BWT{nil}
 	}
 	d := a.Sub(b)
-	return &BWT{d}
+	return &BWT{&d}
 }
 
 // LoadLocation 按照传入的IANA获取Location
@@ -498,4 +525,19 @@ func LoadLocation(loc ...string) *time.Location {
 		location, _ = time.LoadLocation("Local")
 	}
 	return location
+}
+
+// DurSec 数字转为秒级间隔(s)
+func DurSec[T Numeric](t T) time.Duration {
+	return time.Duration(t) * time.Second
+}
+
+// DurMin 数字转为分级间隔(m)
+func DurMin[T Numeric](t T) time.Duration {
+	return time.Duration(t) * time.Minute
+}
+
+// DurHour 数字转为小时级间隔(h)
+func DurHour[T Numeric](t T) time.Duration {
+	return time.Duration(t) * time.Hour
 }

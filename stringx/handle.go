@@ -61,6 +61,9 @@ func Hidden(src string, begin, end uint, hidden ...rune) string {
 	all := []rune(src)
 	pre := all[:begin]
 	count := uint(len(all))
+	if begin > count {
+		return src
+	}
 	if end > count {
 		end = count
 	}
@@ -70,6 +73,28 @@ func Hidden(src string, begin, end uint, hidden ...rune) string {
 	}
 
 	return string(pre) + string(all[end:])
+}
+
+// HiddenUnknown 用指定长度字符替换指定位置的字符
+// HiddenUnknown("0123456789", 1, 5)
+// 输出“0***789”
+// 第三个参数，默认为："***"
+func Mask(src string, begin, end uint, hidden ...string) string {
+	placeholder := "***"
+	if len(hidden) > 0 {
+		placeholder = hidden[0]
+	}
+	all := []rune(src)
+	pre := all[:begin]
+	count := uint(len(all))
+	if begin > count {
+		return src
+	}
+	if end > count {
+		end = count
+	}
+
+	return string(pre) + placeholder + string(all[end:])
 }
 
 // Sub 截取字符串

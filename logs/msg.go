@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var AppName = ""
+
 // Msg 日志消息结构体
 type Msg struct {
 	Level               LogLevel
@@ -14,10 +16,7 @@ type Msg struct {
 	When                time.Time
 	FilePath            string
 	LineNumber          int
-	Title               string
-	ExecDur             int64
 	Args                []any
-	enableFullFilePath  bool
 	enableFuncCallDepth bool
 }
 
@@ -28,7 +27,11 @@ func (m *Msg) Format() string {
 		msg = fmt.Sprintf(msg, m.Args...)
 	}
 	_, f := path.Split(m.FilePath)
-	h, _, _ := formatTimeHeader(m.When)
-	msg = fmt.Sprintf(pattern, m.ID, h, levelPrefix[m.Level], m.Title, m.ExecDur, f, m.LineNumber, msg)
-	return msg
+	var level = levelPrefix[m.Level]
+
+	if m.ID == "" {
+		return fmt.Sprintf(withoutIdPattern, m.When.Format(time.RFC3339), AppName, level, f, m.LineNumber, msg)
+	}
+
+	return fmt.Sprintf(pattern, m.When.Format(time.RFC3339), m.ID, AppName, level, f, m.LineNumber, msg)
 }

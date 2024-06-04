@@ -2,9 +2,8 @@ package operator_test
 
 import (
 	"fmt"
+	"std-library/operator"
 	"testing"
-
-	"github.com/odycenter/std-library/operator"
 )
 
 func TestIF(t *testing.T) {

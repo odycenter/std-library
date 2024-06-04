@@ -2,9 +2,8 @@ package hmac_test
 
 import (
 	"fmt"
+	"std-library/crypto/hmac"
 	"testing"
-
-	"github.com/odycenter/std-library/crypto/hmac"
 )
 
 func TestSum1(t *testing.T) {

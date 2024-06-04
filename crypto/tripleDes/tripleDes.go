@@ -4,8 +4,7 @@ package tripleDes
 import (
 	"crypto/cipher"
 	"crypto/des"
-
-	"github.com/odycenter/std-library/crypto"
+	"std-library/crypto"
 )
 
 type Tripledes struct {

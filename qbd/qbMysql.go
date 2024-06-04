@@ -198,3 +198,12 @@ func (qb *MySQLQueryBuilder) String(multiplex ...bool) string {
 	}
 	return s
 }
+
+func (qb *MySQLQueryBuilder) Tokens() []string {
+	return qb.tokens
+}
+
+func (qb *MySQLQueryBuilder) Append(mySQLQueryBuilder *MySQLQueryBuilder) QueryBuilder {
+	qb.tokens = append(qb.tokens, mySQLQueryBuilder.tokens...)
+	return qb
+}

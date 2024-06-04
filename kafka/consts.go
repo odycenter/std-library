@@ -6,6 +6,7 @@ import (
 )
 
 var producers sync.Map     //map[string]UniversalProducer
+var v2Producers sync.Map   //map[string]UniversalProducer
 var consumers consumersMap //map[string][]Consumer
 
 // 起始偏移位置

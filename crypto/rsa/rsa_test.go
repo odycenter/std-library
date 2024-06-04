@@ -2,10 +2,9 @@ package rsa_test
 
 import (
 	"fmt"
+	"std-library/crypto"
+	"std-library/crypto/rsa"
 	"testing"
-
-	"github.com/odycenter/std-library/crypto"
-	"github.com/odycenter/std-library/crypto/rsa"
 )
 
 func TestKeyPair(t *testing.T) {

@@ -2,10 +2,9 @@ package jwt_test
 
 import (
 	"fmt"
+	"std-library/jwt"
 	"testing"
 	"time"
-
-	"github.com/odycenter/std-library/jwt"
 )
 
 func TestToken(t *testing.T) {

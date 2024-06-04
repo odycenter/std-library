@@ -4,6 +4,7 @@ package redis
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"github.com/redis/go-redis/v9"
 	"log"
@@ -16,6 +17,7 @@ var pool sync.Map //map[AliasName]*Cli
 var latestCli *Cli
 var defaultCtx = context.TODO()
 var Nil = redis.Nil
+var ErrCmdExec = errors.New("redis exec hsetex failed")
 
 // Opt redis配置信息
 type Opt struct {
@@ -98,6 +100,10 @@ func Init(opts ...*Opt) {
 	}
 }
 
+func InitMigration(client redis.UniversalClient) {
+	pool.Store("default", &Cli{"default", nil, client, nil})
+}
+
 func newClient(opt *Opt) redis.UniversalClient {
 	return redis.NewClient(&redis.Options{
 		Dialer:       opt.Dialer,
@@ -156,7 +162,29 @@ func RDB(aliasName ...string) *Cli {
 	if !ok {
 		panic(fmt.Errorf("no %s cli in RDB pool", name))
 	}
-	return v.(*Cli)
+	cli := v.(*Cli)
+	return &Cli{
+		AliasName: cli.AliasName,
+		opt:       cli.opt,
+		rdb:       cli.rdb,
+		ctx:       nil,
+	}
+}
+
+// 该方法旨在兼容处理未传入标准时间间隔的情况，例如传入数字
+// 局限：
+//
+//	仅能处理秒级时间参数
+//	参数需要小于 time.Second 的大小(< 1000000000)
+//
+// Warning:
+//
+//	这只是一个兼容处理，并不是一个好的解决方案，正常情况下请按参数类型传值
+func getDuration(t time.Duration) time.Duration {
+	if t < time.Second {
+		return t * time.Second
+	}
+	return t
 }
 
 // WithCtx 使用自定义的ctx以控制执行流程
@@ -206,9 +234,9 @@ func (c *Cli) TTL(key string, p ...bool) (time.Duration, error) {
 // p true 以毫秒为单位
 func (c *Cli) Expire(key string, expiration time.Duration, p ...bool) (bool, error) {
 	if p != nil && p[0] {
-		return c.rdb.PExpire(c.getCtx(), key, expiration).Result()
+		return c.rdb.PExpire(c.getCtx(), key, getDuration(expiration)).Result()
 	}
-	return c.rdb.Expire(c.getCtx(), key, expiration).Result()
+	return c.rdb.Expire(c.getCtx(), key, getDuration(expiration)).Result()
 }
 
 // ExpireAt 为给定 key 设置生存时间，当 key 过期时(生存时间为 0 )，它会被自动删除
@@ -249,21 +277,18 @@ const KeepTTL = redis.KeepTTL
 // Set 将字符串值 value 关联到 key
 // expiration >0则设置过期时间，0不设置过期时间，需要set时保留之前的TTL则使用 KeepTTL
 func (c *Cli) Set(key string, val any, expiration ...time.Duration) error {
-	var ttl time.Duration
-	if expiration != nil {
-		ttl = expiration[0]
-	}
-	return c.rdb.Set(c.getCtx(), key, val, ttl).Err()
+	expiration = append(expiration, 0)
+	return c.rdb.Set(c.getCtx(), key, val, getDuration(expiration[0])).Err()
 }
 
 // SetNx 只在键 key 不存在的情况下，将键 key 的值设置为 value
 func (c *Cli) SetNx(key string, val any, expiration time.Duration) (bool, error) {
-	return c.rdb.SetNX(c.getCtx(), key, val, expiration).Result()
+	return c.rdb.SetNX(c.getCtx(), key, val, getDuration(expiration)).Result()
 }
 
 // SetEx 将键 key 的值设置为 value ，并将键 key 的生存时间设置为 expiration 秒钟
 func (c *Cli) SetEx(key string, val any, expiration time.Duration) (string, error) {
-	return c.rdb.SetEx(c.getCtx(), key, val, expiration).Result()
+	return c.rdb.SetEx(c.getCtx(), key, val, getDuration(expiration)).Result()
 }
 
 // Incr 为键 key 储存的数字值加上一
@@ -349,15 +374,12 @@ func (c *Cli) HSet(key, field string, values any) (int64, error) {
 // HSetEx 并将键 key 的生存时间设置为 expiration 秒钟
 // 并非严谨实现方式，有可能造成 Expire 设置失败
 func (c *Cli) HSetEx(key, field string, values any, expiration time.Duration) (int64, error) {
-	i, err := c.rdb.HSet(c.getCtx(), key, field, values).Result()
-	if err != nil {
-		return i, err
-	}
-	_, err = c.rdb.Expire(c.getCtx(), key, expiration).Result()
-	if err != nil {
-		return i, err
-	}
-	return i, nil
+	script := `
+redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])
+redis.call('EXPIRE', KEYS[1], tonumber(ARGV[3]))
+return 1
+`
+	return c.rdb.Eval(c.getCtx(), script, []string{key}, field, values, expiration/time.Second).Int64()
 }
 
 // HExists 检查给定域 field 是否存在于哈希表 hash 当中
@@ -729,6 +751,10 @@ func (c *Cli) EvalSha(sha1 string, keys []string, args ...any) (any, error) {
 // Eval 使用 EVAL 命令对 Lua 脚本进行求值
 func (c *Cli) Eval(script string, keys []string, args ...any) (any, error) {
 	return c.rdb.Eval(c.getCtx(), script, keys, args...).Result()
+}
+
+func (c *Cli) EvalCmd(script string, keys []string, args ...any) *redis.Cmd {
+	return c.rdb.Eval(c.getCtx(), script, keys, args...)
 }
 
 // Publish 发布

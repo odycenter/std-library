@@ -14,8 +14,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"hash"
-
-	"github.com/odycenter/std-library/crypto"
+	"std-library/crypto"
 )
 
 type Rsa struct {
@@ -128,8 +127,17 @@ func (r *Rsa) Encrypt(origin []byte) *Ret {
 	if err != nil {
 		return &Ret{err: err}
 	}
-	result, err := cptRsa.EncryptPKCS1v15(rand.Reader, pub.(*cptRsa.PublicKey), origin)
-	return &Ret{result, err}
+	pubKey := pub.(*cptRsa.PublicKey)
+	bs := splitWithSize(origin, pubKey.N.BitLen()/8-11)
+	var result bytes.Buffer
+	for _, b := range bs {
+		part, err := cptRsa.EncryptPKCS1v15(rand.Reader, pubKey, b)
+		if err != nil {
+			return &Ret{err: err}
+		}
+		result.Write(part)
+	}
+	return &Ret{result.Bytes(), err}
 }
 
 // Decrypt 解密

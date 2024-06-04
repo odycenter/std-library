@@ -1,10 +1,9 @@
 package oss_test
 
 import (
-	"testing"
-
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
-	oss2 "github.com/odycenter/std-library/sdk/aliyun/oss"
+	oss2 "std-library/sdk/aliyun/oss"
+	"testing"
 )
 
 func TestNew(t *testing.T) {

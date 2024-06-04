@@ -3,15 +3,14 @@ package nets
 
 import (
 	"fmt"
+	"github.com/mssola/useragent"
 	"io"
 	"net"
 	"net/http"
+	"std-library/json"
+	"std-library/stringx"
 	"strconv"
 	"strings"
-
-	"github.com/mssola/useragent"
-	"github.com/odycenter/std-library/json"
-	"github.com/odycenter/std-library/stringx"
 )
 
 // T 返回值类型转换结构

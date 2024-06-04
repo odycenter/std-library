@@ -32,17 +32,17 @@ func Parse(otk, salt string) (claims map[string]any) {
 		ve, ok := err.(*jwt.ValidationError)
 		if ok {
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				fmt.Println("That's Not A Token:", err)
+				fmt.Println("That's Not A Token:", token, err)
 				return
 			} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-				fmt.Println("Token Has Expired:", err)
+				fmt.Println("Token Has Expired:", token, err)
 				return
 			} else {
-				fmt.Println("Invalid Token:", err)
+				fmt.Println("Invalid Token:", token, err)
 				return
 			}
 		} else {
-			fmt.Println("Token Parse Failed:", err)
+			fmt.Println("Token Parse Failed:", token, err)
 			return
 		}
 	}
@@ -56,4 +56,10 @@ func Parse(otk, salt string) (claims map[string]any) {
 		return
 	}
 	return
+}
+
+// OriginParse 原生解析Token
+// Deprecated: JWT Function not safe for payload
+func OriginParse(otk string, keyFunc jwt.Keyfunc) (*jwt.Token, error) {
+	return jwt.Parse(otk, keyFunc)
 }

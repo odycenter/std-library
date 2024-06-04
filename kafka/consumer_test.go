@@ -1,33 +1,60 @@
-package kafka_test
+package kafka
 
 import (
 	"context"
-	"log"
+	"github.com/segmentio/kafka-go"
+	"os"
+	"runtime/pprof"
+	"std-library/app/log/consts/logKey"
 	"testing"
 	"time"
-
-	"github.com/odycenter/std-library/kafka"
 )
 
-func TestKafkaConsumer(t *testing.T) {
-	kafkaConfig := kafka.ConsumerOption{
-		Count:        3,
-		BrokersAddrs: []string{"127.0.0.1:29092"},
-		GroupID:      "test1",
-		Topics:       []string{"topic1"},
-		MaxBytes:     10e6, // 10MB
-		ManualCommit: false,
-		OnReceive: func(ctx context.Context, msg kafka.Message) {
-			log.Printf("key:%s,value:%s,offset:%d,position:%d\n", msg.Key, msg.Value, msg.Offset, msg.Partition)
-			//time.Sleep(time.Millisecond * 1)
-		},
-		OnError: func(err error) {
-			log.Println("receive the error from Kafka", err.Error())
-		},
+func BenchmarkKafkaConsumerLog(b *testing.B) {
+	msg := kafka.Message{
+		Partition: 1,
+		Offset:    1,
+		Key:       []byte("key"),
+		Value:     []byte("{\"ApiName\":\"gametransaction\",\"Data\":{\"LogId\":\"65af212d8cf0a891699b4d8d\",\"PlayerId\":6505538,\"AgentId\":22855,\"ChannelId\":\"C457718_1\",\"PackId\":486,\"TransactionId\":\"65af21271a6d00003b117ccf\",\"SeqNo\":\"65af212d8cf0a891699b4d8c\",\"Type\":11,\"GameId\":8819,\"GameType\":\"SGQP\",\"SubGameId\":8819004,\"AddGold\":23400,\"CreateTime\":1705976109,\"RoundId\":\"24012310144664884863\",\"BetGold\":12000,\"TotalBetGold\":12000,\"WinGold\":23400,\"ValidWater\":12000,\"IsBetTrade\":false,\"Status\":1,\"SettleCount\":1,\"BetTime\":1705976103,\"SettleTime\":1705976103,\"Version\":1,\"KafkaSyncVersion\":1,\"CurrencyCode\":\"RMB\"},\"CreateTime\":\"2024-01-23T10:15:09.589Z\",\"NumberTime\":1705976109,\"Process\":false,\"FailCount\":0,\"AgentId\":0}"),
+		Time:      time.Now(),
 	}
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	kafka.NewConsumer(ctx, &kafkaConfig)
-	<-time.After(time.Hour)
+	msg.Headers = append(msg.Headers, kafka.Header{Key: logKey.RefId, Value: []byte("8d34199a2342adbbbdf9")})
+	msg.Headers = append(msg.Headers, kafka.Header{Key: logKey.Client, Value: []byte("Client")})
+	for i := 0; i < b.N; i++ {
+		handle(msg, nil, func(ctx context.Context, msg Message) {
+		})
+	}
+}
+
+func TestKafkaConsumerLog(t *testing.T) {
+	msg := kafka.Message{
+		Topic:     "topic1234",
+		Partition: 1,
+		Offset:    1,
+		Key:       []byte("key"),
+		Value:     []byte("{\"ApiName\":\"gametransaction\",\"Data\":{\"LogId\":\"65af212d8cf0a891699b4d8d\",\"PlayerId\":6505538,\"AgentId\":22855,\"ChannelId\":\"C457718_1\",\"PackId\":486,\"TransactionId\":\"65af21271a6d00003b117ccf\",\"SeqNo\":\"65af212d8cf0a891699b4d8c\",\"Type\":11,\"GameId\":8819,\"GameType\":\"SGQP\",\"SubGameId\":8819004,\"AddGold\":23400,\"CreateTime\":1705976109,\"RoundId\":\"24012310144664884863\",\"BetGold\":12000,\"TotalBetGold\":12000,\"WinGold\":23400,\"ValidWater\":12000,\"IsBetTrade\":false,\"Status\":1,\"SettleCount\":1,\"BetTime\":1705976103,\"SettleTime\":1705976103,\"Version\":1,\"KafkaSyncVersion\":1,\"CurrencyCode\":\"RMB\"},\"CreateTime\":\"2024-01-23T10:15:09.589Z\",\"NumberTime\":1705976109,\"Process\":false,\"FailCount\":0,\"AgentId\":0}"),
+		Time:      time.Now(),
+	}
+	msg.Headers = append(msg.Headers, kafka.Header{Key: logKey.RefId, Value: []byte("8d34199a2342adbbbdf9")})
+	msg.Headers = append(msg.Headers, kafka.Header{Key: logKey.Client, Value: []byte("Client")})
+
+	f, err := os.Create("cpu.pprof")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pprof.StartCPUProfile(f)
+	defer pprof.StopCPUProfile()
+
+	for i := 0; i < 10000; i++ {
+		handle(msg, nil, func(ctx context.Context, msg Message) {
+		})
+	}
+
+	f, err = os.Create("mem.pprof")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 写入Memory profiling
+	pprof.WriteHeapProfile(f)
+	defer f.Close()
 }

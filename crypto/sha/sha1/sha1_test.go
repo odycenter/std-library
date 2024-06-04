@@ -2,9 +2,8 @@ package sha1_test
 
 import (
 	"fmt"
+	"std-library/crypto/sha/sha1"
 	"testing"
-
-	"github.com/odycenter/std-library/crypto/sha/sha1"
 )
 
 func TestSha1(t *testing.T) {

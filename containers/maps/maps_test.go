@@ -2,9 +2,8 @@ package maps_test
 
 import (
 	"fmt"
+	"std-library/containers/maps"
 	"testing"
-
-	"github.com/odycenter/std-library/containers/maps"
 )
 
 func TestMutex(t *testing.T) {

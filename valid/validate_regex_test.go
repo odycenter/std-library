@@ -3,9 +3,8 @@ package valid_test
 import (
 	"encoding/json"
 	"fmt"
+	"std-library/valid"
 	"testing"
-
-	"github.com/odycenter/std-library/valid"
 )
 
 func TestRegex(t *testing.T) {

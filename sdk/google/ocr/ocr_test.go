@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"std-library/sdk/google/ocr"
 	"testing"
 	"time"
-
-	"github.com/odycenter/std-library/sdk/google/ocr"
 )
 
 func TestText(t *testing.T) {

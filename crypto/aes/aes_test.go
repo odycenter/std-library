@@ -2,11 +2,10 @@ package aes_test
 
 import (
 	"fmt"
+	"std-library/crash"
+	"std-library/crypto"
+	"std-library/crypto/aes"
 	"testing"
-
-	"github.com/odycenter/std-library/crash"
-	"github.com/odycenter/std-library/crypto"
-	"github.com/odycenter/std-library/crypto/aes"
 )
 
 func TestAes_Encrypt(t *testing.T) {

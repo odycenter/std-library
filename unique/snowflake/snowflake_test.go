@@ -2,9 +2,8 @@ package snowflake_test
 
 import (
 	"fmt"
+	"std-library/unique/snowflake"
 	"testing"
-
-	"github.com/odycenter/std-library/unique/snowflake"
 )
 
 func TestSnowFlake(t *testing.T) {

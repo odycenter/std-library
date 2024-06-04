@@ -38,7 +38,19 @@ func ToIndexModel(ms []IndexModel) (i []mongo.IndexModel) {
 	return
 }
 
-type Cursor struct{ *mongo.Cursor }
+type Cursor struct {
+	*mongo.Cursor
+	db   string
+	coll string
+}
+
+func (c *Cursor) Decode(v any) error {
+	err := c.Cursor.Decode(v)
+	if err != nil {
+		return err
+	}
+	return globalOpts.getAfterExec()(c.db, c.coll, v)
+}
 
 /*return result*/
 
@@ -48,6 +60,16 @@ type UpdateResult struct {
 
 type SingleResult struct {
 	*mongo.SingleResult
+	db   string
+	coll string
+}
+
+func (s *SingleResult) Decode(v any) error {
+	err := s.SingleResult.Decode(v)
+	if err != nil {
+		return err
+	}
+	return globalOpts.getAfterExec()(s.db, s.coll, v)
 }
 
 type InsertManyResult struct {
@@ -64,6 +86,49 @@ type DeleteResult struct {
 
 type ChangeStream struct {
 	*mongo.ChangeStream
+	db   string
+	coll string
+}
+
+func (c *ChangeStream) Decode(v any) error {
+	err := c.ChangeStream.Decode(v)
+	if err != nil {
+		return err
+	}
+	return globalOpts.getAfterExec()(c.db, c.coll, v)
 }
 
 type Pipeline mongo.Pipeline
+
+type GlobalOptions struct {
+	preExec   FilterFunc //执行前操作
+	afterExec FilterFunc //执行后操作
+}
+
+func (g *GlobalOptions) setPreExec(f FilterFunc) {
+	g.preExec = f
+}
+
+func (g *GlobalOptions) getPreExec() FilterFunc {
+	if g.preExec == nil {
+		return defaultFilterFunc
+	}
+	return g.preExec
+}
+
+func (g *GlobalOptions) setAfterExec(f FilterFunc) {
+	g.afterExec = f
+}
+
+func (g *GlobalOptions) getAfterExec() FilterFunc {
+	if g.afterExec == nil {
+		return defaultFilterFunc
+	}
+	return g.afterExec
+}
+
+type FilterFunc func(db, coll string, i ...any) error
+
+var defaultFilterFunc = func(db, coll string, i ...any) error {
+	return nil
+}

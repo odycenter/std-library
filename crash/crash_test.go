@@ -2,9 +2,8 @@ package crash_test
 
 import (
 	"fmt"
+	"std-library/crash"
 	"testing"
-
-	"github.com/odycenter/std-library/crash"
 )
 
 func TestTry(t *testing.T) {

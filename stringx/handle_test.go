@@ -2,11 +2,10 @@ package stringx_test
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
+	"std-library/array"
+	"std-library/stringx"
 	"testing"
-
-	"github.com/odycenter/std-library/stringx"
-
-	"github.com/odycenter/std-library/array"
 )
 
 func TestTrimHtml(t *testing.T) {
@@ -29,6 +28,10 @@ func TestJoin(t *testing.T) {
 
 func TestHidden(t *testing.T) {
 	fmt.Println(stringx.Hidden("Hello World!", 3, 15))
+}
+
+func TestMask(t *testing.T) {
+	assert.Equal(t, "Hel***ld!", stringx.Mask("Hello World!", 3, 9))
 }
 
 func TestSub(t *testing.T) {

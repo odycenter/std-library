@@ -2,11 +2,10 @@ package lru_test
 
 import (
 	"fmt"
+	"std-library/cache/lru"
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/odycenter/std-library/cache/lru"
 )
 
 func TestLRU(t *testing.T) {

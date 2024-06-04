@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
+	grpcweb "std-library/app/web/grpc"
 	"strings"
 	"time"
 )
@@ -95,13 +96,13 @@ func Dial(address string, opt *Option) (*grpc.ClientConn, error) {
 	target := fmt.Sprint(address, ":", port)
 	ctx, cancel := context.WithTimeout(context.Background(), DialTimeout)
 	defer cancel()
-	return grpc.DialContext(ctx, target, append(opt.getDialOptions(), grpc.WithTransportCredentials(
-		insecure.NewCredentials()),
+	options := []grpc.DialOption{grpc.WithUnaryInterceptor(grpcweb.ClientInterceptor)}
+	options = append(options, opt.getDialOptions()...)
+	return grpc.DialContext(ctx, target, append(options, grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithConnectParams(grpc.ConnectParams{Backoff: backoff.DefaultConfig, MinConnectTimeout: MinConnectTimeout}),
 		grpc.WithInitialWindowSize(InitialWindowSize),
 		grpc.WithInitialConnWindowSize(InitialConnWindowSize),
-		grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(MaxSendMsgSize),
-			grpc.MaxCallRecvMsgSize(MaxRecvMsgSize)),
+		grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(MaxSendMsgSize), grpc.MaxCallRecvMsgSize(MaxRecvMsgSize)),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:                KeepAliveTime,
 			Timeout:             KeepAliveTimeout,
@@ -111,17 +112,14 @@ func Dial(address string, opt *Option) (*grpc.ClientConn, error) {
 	)...)
 }
 
-// Server 对grpc package server结构的封装
-type Server struct {
-	Srv *grpc.Server
-}
-
-// NewServer 创建新的GRPC服务
-func NewServer(opt ...grpc.ServerOption) *Server {
-	return &Server{grpc.NewServer(opt...)}
-}
+//封装 grpc.DialOption
 
 // WithUnaryClientInterceptor 封装gRPC WithUnaryInterceptor
 func WithUnaryClientInterceptor(interceptor grpc.UnaryClientInterceptor) grpc.DialOption {
 	return grpc.WithUnaryInterceptor(interceptor)
+}
+
+// WithChainUnaryClientInterceptor 封装gRPC WithChainUnaryInterceptor
+func WithChainUnaryClientInterceptor(interceptor ...grpc.UnaryClientInterceptor) grpc.DialOption {
+	return grpc.WithChainUnaryInterceptor(interceptor...)
 }

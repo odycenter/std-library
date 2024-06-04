@@ -2,10 +2,12 @@
 package logs
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"runtime"
+	"std-library/app/log/consts/logKey"
 	"strings"
 	"sync"
 	"time"
@@ -18,14 +20,11 @@ type DefaultLog struct {
 	level               LogLevel
 	init                bool
 	loggerFuncCallDepth int //如果值 <0 则不再打印，=0为
-	enableFullFilePath  bool
 	asynchronous        bool
 	msgChan             chan *Msg
 	signalChan          chan string
 	msgChanLen          int
 	outputs             []*nameLogger
-	globalFormatter     string
-	prefix              string
 }
 
 func (dl *DefaultLog) setLogger(adapterName Adapter, opts ...*Option) error {
@@ -40,14 +39,6 @@ func (dl *DefaultLog) setLogger(adapterName Adapter, opts ...*Option) error {
 		return fmt.Errorf("logs: unknown Adapter %q (forgotten Register?)", adapterName)
 	}
 	lg := logAdapter.(newLoggerFunc)()
-	// 全局的格式化程序覆盖默认设置格式化程序
-	if len(dl.globalFormatter) > 0 {
-		ft, ok := GetFormatter(dl.globalFormatter)
-		if !ok {
-			return fmt.Errorf("the formatter with name: %s not found", dl.globalFormatter)
-		}
-		lg.SetFormatter(ft)
-	}
 	opts = append(opts, &Option{LogLevel: LevelDebug})
 	err := lg.Init(opts[0])
 	if err != nil {
@@ -146,7 +137,7 @@ func (dl *DefaultLog) Write(p []byte) (n int, err error) {
 	}
 	lm := &Msg{
 		Msg:   string(p),
-		Level: LevelEmergency,
+		Level: LevelError,
 		When:  time.Now(),
 	}
 	//设置 levelLoggerImpl 以确保所有日志消息都将被写出
@@ -176,7 +167,6 @@ func (dl *DefaultLog) writeMsg(lm *Msg) error {
 	lm.FilePath = file
 	lm.LineNumber = line
 
-	lm.enableFullFilePath = dl.enableFullFilePath
 	lm.enableFuncCallDepth = dl.loggerFuncCallDepth > 0
 	if dl.asynchronous {
 		logM := msgPool.Get().(*Msg)
@@ -218,11 +208,6 @@ func (dl *DefaultLog) GetLogFuncCallDepth() int {
 	return dl.loggerFuncCallDepth
 }
 
-// SetPrefix 设置前缀
-func (dl *DefaultLog) SetPrefix(s string) {
-	dl.prefix = s
-}
-
 // 开始log消耗
 func (dl *DefaultLog) startLogger() {
 	gameOver := false
@@ -249,35 +234,8 @@ func (dl *DefaultLog) startLogger() {
 	}
 }
 
-func (dl *DefaultLog) setGlobalFormatter(formatter string) error {
-	dl.globalFormatter = formatter
-	return nil
-}
-
-// SetGlobalFormatter 为所有日志适配器设置全局格式化程序 不要忘记通过调用 RegisterFormatter 来注册格式化程序
-func SetGlobalFormatter(formatter string) error {
-	return defaultLogger.setGlobalFormatter(formatter)
-}
-
-// Emergency Log EMERGENCY level 日志。
-func (dl *DefaultLog) Emergency(format string, v ...any) {
-	if LevelEmergency > dl.level {
-		return
-	}
-
-	lm := &Msg{
-		Level: LevelEmergency,
-		Msg:   format,
-		When:  time.Now(),
-	}
-	if len(v) > 0 {
-		lm.Msg = fmt.Sprintf(lm.Msg, v...)
-	}
-
-	_ = dl.writeMsg(lm)
-}
-
 // Alert Log ALERT level 日志。
+// Deprecated: Use Log instead
 func (dl *DefaultLog) Alert(format string, v ...any) {
 	if LevelAlert > dl.level {
 		return
@@ -293,6 +251,7 @@ func (dl *DefaultLog) Alert(format string, v ...any) {
 }
 
 // Critical Log CRITICAL level 日志。
+// Deprecated: Use Log instead
 func (dl *DefaultLog) Critical(format string, v ...any) {
 	if LevelCritical > dl.level {
 		return
@@ -308,6 +267,7 @@ func (dl *DefaultLog) Critical(format string, v ...any) {
 }
 
 // Error Log ERROR level 日志。
+// Deprecated: Use Log instead
 func (dl *DefaultLog) Error(format string, v ...any) {
 	if LevelError > dl.level {
 		return
@@ -323,6 +283,7 @@ func (dl *DefaultLog) Error(format string, v ...any) {
 }
 
 // Warn Log WARN level 日志。
+// Deprecated: Use Log instead
 func (dl *DefaultLog) Warn(format string, v ...any) {
 	if LevelWarning > dl.level {
 		return
@@ -338,6 +299,7 @@ func (dl *DefaultLog) Warn(format string, v ...any) {
 }
 
 // Notice Log NOTICE level 日志。
+// Deprecated: Use Log instead
 func (dl *DefaultLog) Notice(format string, v ...any) {
 	if LevelNotice > dl.level {
 		return
@@ -353,6 +315,7 @@ func (dl *DefaultLog) Notice(format string, v ...any) {
 }
 
 // Info Log INFO level 日志。
+// Deprecated: Use Log instead
 func (dl *DefaultLog) Info(format string, v ...any) {
 	if LevelInformation > dl.level {
 		return
@@ -368,6 +331,7 @@ func (dl *DefaultLog) Info(format string, v ...any) {
 }
 
 // Debug Log DEBUG level 日志。
+// Deprecated: Use Log instead
 func (dl *DefaultLog) Debug(format string, v ...any) {
 	if LevelDebug > dl.level {
 		return
@@ -382,45 +346,28 @@ func (dl *DefaultLog) Debug(format string, v ...any) {
 	_ = dl.writeMsg(lm)
 }
 
-// ID Log参数填充ID
-func (dl *DefaultLog) ID(lv LogLevel, ID string, format string, v ...any) {
+func (dl *DefaultLog) Log(ctx context.Context, lv LogLevel, f any, v ...any) {
 	if lv > dl.level {
 		return
 	}
-	lm := &Msg{
-		Level: lv,
-		Msg:   format,
-		When:  time.Now(),
-		Args:  v,
-		ID:    ID,
-	}
-	_ = dl.writeMsg(lm)
-}
+	message := formatPattern(f, v...)
 
-// Ex Log扩展参数填充，
-// [0]Title string
-// [1]ExecDur int64
-// [2]ID string
-func (dl *DefaultLog) Ex(lv LogLevel, ex map[string]any, format string, v ...any) {
-	if lv > dl.level {
-		return
-	}
-	lm := &Msg{
-		Level: lv,
-		Msg:   format,
-		When:  time.Now(),
-		Args:  v,
-	}
-	if title, ok := ex["Title"]; ok {
-		lm.Title = title.(string)
-	}
-	if execDur, ok := ex["ExecDur"]; ok {
-		lm.ExecDur = int64(execDur.(int))
-	}
-	if id, ok := ex["ID"]; ok {
-		lm.ID = id.(string)
+	var id string
+	if ctx != nil {
+		val := ctx.Value(logKey.Id)
+		ctxId, ok := val.(string)
+		if ok {
+			id = ctxId
+		}
 	}
 
+	lm := &Msg{
+		Level: lv,
+		Msg:   message,
+		When:  time.Now(),
+		Args:  v,
+		ID:    id,
+	}
 	_ = dl.writeMsg(lm)
 }
 
@@ -435,9 +382,6 @@ func (dl *DefaultLog) flush() {
 			}
 			break
 		}
-	}
-	for _, l := range dl.outputs {
-		l.Flush()
 	}
 }
 
@@ -505,12 +449,6 @@ func GetDefaultLogger() *DefaultLog {
 	return defaultLogger
 }
 
-// EnableFullFilePath 启用完整文件路径日志记录。默认禁用
-// e.g "/home/Documents/GitHub/beego/mainapp/" instead of "mainapp"
-func EnableFullFilePath(b bool) {
-	defaultLogger.enableFullFilePath = b
-}
-
 // Reset 删除所有适配器
 func Reset() {
 	defaultLogger.Reset()
@@ -526,11 +464,6 @@ func SetLevel(l LogLevel) {
 	defaultLogger.SetLevel(l)
 }
 
-// SetPrefix 设置前缀
-func SetPrefix(s string) {
-	defaultLogger.SetPrefix(s)
-}
-
 // SetLogFuncCallDepth 设置日志 funcCallDepth
 func SetLogFuncCallDepth(d int) {
 	defaultLogger.loggerFuncCallDepth = d
@@ -541,56 +474,57 @@ func SetLogger(adapter Adapter, opts ...*Option) error {
 	return defaultLogger.SetLogger(adapter, opts...)
 }
 
-// Emergency Log EMERGENCY level 日志。
-func Emergency(f any, v ...any) {
-	defaultLogger.Emergency(formatPattern(f, v...), v...)
-}
-
 // Alert Log ALERT level 日志。
 func Alert(f any, v ...any) {
-	defaultLogger.Alert(formatPattern(f, v...), v...)
+	defaultLogger.Log(nil, LevelAlert, f, v...)
 }
 
 // Critical Log CRITICAL level 日志。
 func Critical(f any, v ...any) {
-	defaultLogger.Critical(formatPattern(f, v...), v...)
+	defaultLogger.Log(nil, LevelCritical, f, v...)
 }
 
 // Error Log ERROR level 日志。
 func Error(f any, v ...any) {
-	defaultLogger.Error(formatPattern(f, v...), v...)
+	defaultLogger.Log(nil, LevelError, f, v...)
 }
 
 // Warn Log WARN level 日志。
 func Warn(f any, v ...any) {
-	defaultLogger.Warn(formatPattern(f, v...), v...)
+	defaultLogger.Log(nil, LevelWarning, f, v...)
 }
 
 // Notice Log NOTICE level 日志。
 func Notice(f any, v ...any) {
-	defaultLogger.Notice(formatPattern(f, v...), v...)
+	defaultLogger.Log(nil, LevelNotice, f, v...)
 }
 
 // Info Log INFO level 日志。
 func Info(f any, v ...any) {
-	defaultLogger.Info(formatPattern(f, v...), v...)
+	defaultLogger.Log(nil, LevelInformation, f, v...)
 }
 
 // Debug Log DEBUG level 日志。
 func Debug(f any, v ...any) {
-	defaultLogger.Debug(formatPattern(f, v...), v...)
+	defaultLogger.Log(nil, LevelDebug, f, v...)
 }
 
-// Ex Log Ex 额外参数填充的 level 日志。
-// 目前EX可包含以下字段来作为扩展信息（注意字段类型）：
-// Title	string
-// ExecDur	int64
-// ID		string
-func Ex(lv LogLevel, ex map[string]any, f any, v ...any) {
-	defaultLogger.Ex(lv, ex, formatPattern(f, v...), v...)
+func TraceWithCtx(ctx context.Context, f any, v ...any) {
+	defaultLogger.Log(ctx, TraceLevel, f, v...)
 }
 
-// ID Log ID 为log 填充ID
-func ID(lv LogLevel, ID string, f any, v ...any) {
-	defaultLogger.ID(lv, ID, formatPattern(f, v...), v...)
+func DebugWithCtx(ctx context.Context, f any, v ...any) {
+	defaultLogger.Log(ctx, LevelDebug, f, v...)
+}
+
+func InfoWithCtx(ctx context.Context, f any, v ...any) {
+	defaultLogger.Log(ctx, LevelInformation, f, v...)
+}
+
+func WarnWithCtx(ctx context.Context, f any, v ...any) {
+	defaultLogger.Log(ctx, LevelWarning, f, v...)
+}
+
+func ErrorWithCtx(ctx context.Context, f any, v ...any) {
+	defaultLogger.Log(ctx, LevelError, f, v...)
 }

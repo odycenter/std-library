@@ -3,9 +3,8 @@ package gzip_test
 import (
 	"encoding/base64"
 	"fmt"
+	"std-library/compression/gzip"
 	"testing"
-
-	"github.com/odycenter/std-library/compression/gzip"
 )
 
 func TestGzip(t *testing.T) {

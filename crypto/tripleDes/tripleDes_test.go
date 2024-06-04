@@ -2,11 +2,10 @@ package tripleDes_test
 
 import (
 	"fmt"
+	"std-library/crypto"
+	"std-library/crypto/tripleDes"
+	"std-library/json"
 	"testing"
-
-	"github.com/odycenter/std-library/crypto"
-	"github.com/odycenter/std-library/crypto/tripleDes"
-	"github.com/odycenter/std-library/json"
 )
 
 func TestTripledes_Encrypt(t *testing.T) {

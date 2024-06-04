@@ -2,9 +2,8 @@ package array_test
 
 import (
 	"fmt"
+	"std-library/array"
 	"testing"
-
-	"github.com/odycenter/std-library/array"
 )
 
 func TestNums2Strs(t *testing.T) {
@@ -38,4 +37,20 @@ func TestMap(t *testing.T) {
 
 func TestBytes2String(t *testing.T) {
 	fmt.Println(array.Bytes2String([]byte{97, 98}))
+}
+
+func TestFlatten(t *testing.T) {
+	type strc struct {
+		S string
+	}
+	m := map[string]strc{"First": {S: "A"}, "Second": {S: "B"}}
+	fmt.Println(array.Flatten(m))
+}
+
+func TestFlattenAny(t *testing.T) {
+	type strc struct {
+		S string
+	}
+	m := map[string]strc{"First": {S: "A"}, "Second": {S: "B"}}
+	fmt.Println(array.FlattenAny(m))
 }

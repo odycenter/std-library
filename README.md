@@ -30,10 +30,12 @@
 		+  #### [csv](docs%2Fcsv) 
 		+  #### [excel](docs%2Fexcel)
     *  ### [elastic](elastic) ES操作的封装和实现
+    *  ### [email](email) EMail操作封装
     *  ### [file](file) 文件操作
     *  ### [fuzzy](fuzzy) 字符串模糊匹配相关操作
     *  ### [grpc](grpc) GRPC封装和实现
     *  ### [imgex](imgex) 图片处理
+    * +  #### [resize](imgex%2Fresize)
     *  ### [json](json) json处理
     *  ### ~~[jwt](jwt) JWT token封装~~
     *  ### [kafka](kafka) Kafka的封装和实现
@@ -59,7 +61,7 @@
 		+  #### [jpush](sdk%2Fjpush)
         +  #### [slack](sdk%2Fslack)
 		+  #### [tg](sdk%2Ftg)
-    *  ### [searcher](searcher) 一个基于内存的全文搜索引擎
+    *  ### ~~[searcher](searcher) 一个基于内存的全文搜索引擎~~
     *  ### [stringx](stringx) 字符串操作扩展 
     *  ### [structx](structx) 结构体操作 
     *  ### [tg](tg) 简单的tg发文实现 

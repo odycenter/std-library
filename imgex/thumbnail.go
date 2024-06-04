@@ -2,12 +2,13 @@ package imgex
 
 import (
 	"bytes"
-	orientation "github.com/takumakei/exif-orientation"
 	"image/jpeg"
 	"image/png"
 	"log"
 	"os"
 	"strings"
+
+	orientation "github.com/takumakei/exif-orientation"
 )
 
 // Thumbnail 缩略图
@@ -68,6 +69,43 @@ type ImageThumbnail struct {
 
 func SaveImageThumbnail(imageData []byte, basePath, filePathBase, tempPath string, smallSize, mediumSize int, needDecode bool) (map[string]ImageThumbnail, error) {
 	normalImage, err := SaveImage(imageData, basePath, filePathBase, tempPath, needDecode)
+	if err != nil {
+		return nil, err
+	}
+	// 对必要信息进行赋值
+	imgExt := normalImage.Ext
+
+	index := strings.LastIndex(normalImage.ImgPath, ".")
+	filePath := normalImage.ImgPath[:index]
+	//小缩略图
+	sThumbnailInf, err := Thumbnail(filePath, "_small", imgExt, smallSize)
+	if err != nil {
+		log.Println("DebugSaveImageThumbnail err:", err)
+		sThumbnailInf = *normalImage
+	}
+	//中缩略图
+	mThumbnailInf, err := Thumbnail(filePath, "_medium", imgExt, mediumSize)
+	if err != nil {
+		log.Println("DebugSaveImageThumbnail err:", err)
+		mThumbnailInf = *normalImage
+	}
+	sThumbnailInf.ImgPath = strings.ReplaceAll(sThumbnailInf.ImgPath, string(os.PathSeparator), "/")
+	mThumbnailInf.ImgPath = strings.ReplaceAll(mThumbnailInf.ImgPath, string(os.PathSeparator), "/")
+
+	normalPath := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(normalImage.ImgPath, basePath+"\\", ""), basePath+"/", ""), "\\", "/")
+	smallPath := strings.ReplaceAll(strings.ReplaceAll(sThumbnailInf.ImgPath, basePath+"/", ""), "\\", "/")
+	mediumPath := strings.ReplaceAll(strings.ReplaceAll(mThumbnailInf.ImgPath, basePath+"/", ""), "\\", "/")
+
+	imageInfo := map[string]ImageThumbnail{
+		"normal": {Url: normalPath, Width: normalImage.Width, Height: normalImage.Height},
+		"small":  {Url: smallPath, Width: sThumbnailInf.Width, Height: sThumbnailInf.Height},
+		"medium": {Url: mediumPath, Width: mThumbnailInf.Width, Height: mThumbnailInf.Height},
+	}
+	return imageInfo, nil
+}
+
+func SaveImageThumbnailCompress(imageData []byte, basePath, filePathBase, tempPath string, smallSize, mediumSize int, needDecode bool) (map[string]ImageThumbnail, error) {
+	normalImage, err := SaveImageCompress(imageData, basePath, filePathBase, tempPath, needDecode)
 	if err != nil {
 		return nil, err
 	}

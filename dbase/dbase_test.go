@@ -2,11 +2,10 @@ package dbase_test
 
 import (
 	"context"
-	"log"
-	"testing"
-
 	"github.com/beego/beego/v2/client/orm"
-	"github.com/odycenter/std-library/dbase"
+	"log"
+	"std-library/dbase"
+	"testing"
 )
 
 type Element struct {
@@ -30,7 +29,6 @@ func TestDB(t *testing.T) {
 		Password:      "d@5xo4MkCYP&7qmB#6?4AAh$8trgo8ds",
 		MaxIdleConnes: 1,
 		MaxOpenConnes: 20,
-		SyncDB:        true,
 	})
 	o := dbase.Orm()
 	var e = Element{"AAAAA", 123}
@@ -127,6 +125,52 @@ func TestDB(t *testing.T) {
 	})
 	if err != nil {
 		log.Println("commit failed ", err.Error())
+		return
+	}
+}
+
+func TestFilter(t *testing.T) {
+	orm.RegisterModel(new(Element))
+	dbase.Init(&dbase.Opt{
+		DriverName:    "mysql",
+		DriverTyp:     orm.DRMySQL,
+		Host:          "127.0.0.1",
+		Port:          "3307",
+		DBName:        "test",
+		User:          "root",
+		Password:      "d@5xo4MkCYP&7qmB#6?4AAh$8trgo8ds",
+		MaxIdleConnes: 1,
+		MaxOpenConnes: 20,
+	})
+	o := dbase.Orm()
+	var e = Element{}
+	filter := o.Filter(&e, "A", "AAAAA")
+	_, err := filter.UpdateWithCtx(context.TODO(), orm.Params{"B": 666})
+	if err != nil {
+		log.Println("Update failed ", err.Error())
+		return
+	}
+}
+
+func TestFilterRaw(t *testing.T) {
+	orm.RegisterModel(new(Element))
+	dbase.Init(&dbase.Opt{
+		DriverName:    "mysql",
+		DriverTyp:     orm.DRMySQL,
+		Host:          "127.0.0.1",
+		Port:          "3307",
+		DBName:        "test",
+		User:          "root",
+		Password:      "d@5xo4MkCYP&7qmB#6?4AAh$8trgo8ds",
+		MaxIdleConnes: 1,
+		MaxOpenConnes: 20,
+	})
+	o := dbase.Orm()
+	var e = Element{}
+	filter := o.FilterRaw(&e, "A", "= 'AAAAA'")
+	_, err := filter.UpdateWithCtx(context.TODO(), orm.Params{"B": 777})
+	if err != nil {
+		log.Println("Update failed ", err.Error())
 		return
 	}
 }

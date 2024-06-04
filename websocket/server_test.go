@@ -3,12 +3,11 @@ package websocket_test
 import (
 	"context"
 	"fmt"
+	"github.com/olahol/melody"
 	"log"
+	"std-library/websocket"
 	"sync"
 	"testing"
-
-	"github.com/odycenter/std-library/websocket"
-	"github.com/olahol/melody"
 )
 
 type Session struct {
@@ -53,7 +52,7 @@ func TestWS(t *testing.T) {
 		sessions.del(ID)
 		fmt.Println("disconnected")
 	})
-	opt.WithOnClose(func(_ *melody.Session, i int, s string) error {
+	opt.WithOnClose(func(session *melody.Session, i int, s string) error {
 		fmt.Printf("closed:%d=>%s\n", i, s)
 		return nil
 	})
