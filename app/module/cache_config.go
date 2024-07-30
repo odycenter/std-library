@@ -18,6 +18,7 @@ import (
 )
 
 type CacheConfig struct {
+	name            string
 	moduleContext   *Context
 	redisCacheStore *internalcache.RedisCacheStore
 	localCacheStore *internalcache.LocalCacheStore
@@ -28,6 +29,7 @@ type CacheConfig struct {
 }
 
 func (c *CacheConfig) Initialize(moduleContext *Context, name string) {
+	c.name = name
 	c.moduleContext = moduleContext
 	c.caches = make(map[string]*internalcache.CacheImpl)
 	controller := internal_sys.NewCacheController(c.caches)
@@ -61,8 +63,11 @@ func (c *CacheConfig) Redis(host string, password ...string) {
 	c.configureRedis(host, password...)
 }
 
-func (c *CacheConfig) Options(options cache.Options) {
-	c.options = &options
+func (c *CacheConfig) Options(options *cache.Options) {
+	if c.localCacheStore != nil || c.redisCacheStore != nil {
+		log.Fatalf("cache is already initialized, can not set options! name=" + c.name)
+	}
+	c.options = options
 }
 
 func (c *CacheConfig) Add(obj interface{}, expiration time.Duration) cache.Cache {
@@ -118,6 +123,9 @@ func (c *CacheConfig) configureRedis(host string, password ...string) {
 	c.moduleContext.ShutdownHook.Add(internal.STAGE_6, func(ctx context.Context, timeoutInMs int64) {
 		redisImpl.Close()
 	})
+	if c.options != nil {
+		redisImpl.PoolSize(c.options.MinPoolSize, c.options.MaxPoolSize)
+	}
 
 	redisImpl.Initialize()
 	c.redisCacheStore = &internalcache.RedisCacheStore{}

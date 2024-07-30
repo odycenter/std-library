@@ -3,22 +3,25 @@ package internal_mongo
 import (
 	"context"
 	"crypto/tls"
+	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	app "std-library/app/conf"
+	actionlog "std-library/app/log"
 	"std-library/logs"
-	mongomigration "std-library/mongo"
+	"strings"
 	"time"
 )
 
 type MongoImpl struct {
-	name        string
-	uri         string
-	option      *options.ClientOptions
-	credential  *options.Credential
-	client      *mongo.Client
-	initialized bool
+	name                          string
+	uri                           string
+	option                        *options.ClientOptions
+	credential                    *options.Credential
+	client                        *mongo.Client
+	slowOperationThresholdInNanos int64
+	initialized                   bool
 }
 
 func New(name string) *MongoImpl {
@@ -32,8 +35,9 @@ func New(name string) *MongoImpl {
 	option.SetRetryWrites(true)
 	option.SetConnectTimeout(5 * time.Second)
 	impl := &MongoImpl{
-		name:   name,
-		option: option,
+		name:                          name,
+		option:                        option,
+		slowOperationThresholdInNanos: 1 * time.Second.Nanoseconds(),
 	}
 	impl.Timeout(120 * time.Second)
 	return impl
@@ -46,17 +50,24 @@ func (m *MongoImpl) Execute(_ context.Context) {
 
 	logs.Debug("mongo Initialize, name=%s", m.name)
 	m.Initialize()
-	mongomigration.InitMigration(m.client)
 }
 
 func (m *MongoImpl) Initialized() bool {
 	return m.initialized
 }
 
+func (m *MongoImpl) Client() *mongo.Client {
+	if !m.initialized {
+		log.Fatalf("mongo is not initialized, name=%s", m.name)
+	}
+	return m.client
+}
+
 func (m *MongoImpl) Initialize() {
 	if m.credential != nil {
 		m.option.SetAuth(*m.credential)
 	}
+	m.option.SetMonitor(m.Monitor())
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, m.option)
@@ -128,4 +139,32 @@ func (m *MongoImpl) TLSConfig(conf *tls.Config) {
 	if conf != nil {
 		m.option.SetTLSConfig(conf)
 	}
+}
+
+func (m *MongoImpl) SlowOperationThreshold(d time.Duration) {
+	m.slowOperationThresholdInNanos = d.Nanoseconds()
+}
+
+func (m *MongoImpl) Monitor() *event.CommandMonitor {
+	return &event.CommandMonitor{
+		Succeeded: func(ctx context.Context, event *event.CommandSucceededEvent) {
+			elapsed := event.CommandFinishedEvent.Duration.Nanoseconds()
+			actionlog.Stat(&ctx, "mongo."+strings.ToLower(event.CommandName), float64(elapsed))
+
+			if elapsed > m.slowOperationThresholdInNanos {
+				actionlog.Context(&ctx, "slow_operation", true)
+				logs.WarnWithCtx(ctx, "[SLOW_OPERATION] slow %s, duration %v, db: %s", event.CommandName, event.CommandFinishedEvent.Duration, event.DatabaseName)
+			}
+		},
+		Failed: func(ctx context.Context, event *event.CommandFailedEvent) {
+			elapsed := event.CommandFinishedEvent.Duration.Nanoseconds()
+			actionlog.Stat(&ctx, "mongo."+strings.ToLower(event.CommandName), float64(elapsed))
+
+			if elapsed > m.slowOperationThresholdInNanos {
+				actionlog.Context(&ctx, "slow_operation", true)
+				logs.WarnWithCtx(ctx, "[SLOW_OPERATION] slow %s, duration %v, db: %s", event.CommandName, event.CommandFinishedEvent.Duration, event.DatabaseName)
+			}
+		},
+	}
+
 }

@@ -8,6 +8,7 @@ import (
 	"os"
 	"std-library/app/module"
 	"std-library/demo"
+	"std-library/demo/test"
 	"std-library/logs"
 	"std-library/mongo"
 	"std-library/redis"
@@ -26,10 +27,7 @@ func TestAppStart(t *testing.T) {
 	os.Setenv("SHUTDOWN_DELAY_IN_SEC", "10")
 	os.Setenv("SHUTDOWN_TIMEOUT_IN_SEC", "45")
 
-	app := CoreApp{}
-	app.Configure()
-	app.Initialize()
-	app.Start()
+	module.Start(&CoreApp{})
 }
 
 type CoreApp struct {
@@ -41,13 +39,18 @@ func (a *CoreApp) Initialize() {
 		"": Conf,
 	}
 	a.Load(&module.SystemModule{EnvProperties: envProperties})
+	a.Mongo().SlowOperationThreshold(40 * time.Millisecond)
 	a.Mongo().ForceEarlyStart()
-	result, err := mongo.DB().InsertOne("test", "ChrisTest", map[string]interface{}{"name": "Chris"})
+	result, err := mongo.DB().InsertOne("test", "InsertTest", map[string]interface{}{"name": "name"})
 	if err != nil {
 		panic(err)
 	}
 	logs.Info(result.InsertedID)
 
+	readOnly := a.Redis("read-only")
+	readOnly.Host(a.RequiredProperty("sys.redis.readonly.host"))
+	readOnly.ForceEarlyStart()
+	redis.RDB("redis:read-only").Get("app_test.cachetest:rwww")
 	a.Redis().ForceEarlyStart() // use ForceEarlyStart to aquire redis instance before startup stage
 	redis.RDB().Del("app_test.cachetest:rwww")
 	// a.Pyroscope().ForceLocalStart()
@@ -56,8 +59,10 @@ func (a *CoreApp) Initialize() {
 	//a.Load(&demo.KafkaModule{})
 	//a.Load(&demo.ScheduleModule{})
 	a.Load(&demo.CacheModule{})
-
-	a.Grpc().AddOpt(grpc.MaxRecvMsgSize(4 << 30)).Server()
+	a.Metric().Listen("8001")
+	a.Grpc().MaxConnections(1)
+	server := a.Grpc().AddOpt(grpc.MaxRecvMsgSize(4 << 30)).Server()
+	test.RegisterTestServiceServer(server, &demo.HelloController{})
 	a.Http()
 	// _ = a.Cache().Add(demo.CacheTest{}, time.Second*300)  // enable to get "found duplicate cache name" panic on startup
 

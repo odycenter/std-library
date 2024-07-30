@@ -2,6 +2,7 @@ package module
 
 import (
 	"context"
+	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"google.golang.org/grpc"
 	"log"
 	internal "std-library/app/internal/module"
@@ -10,13 +11,14 @@ import (
 )
 
 type GrpcServerConfig struct {
-	moduleContext *Context
-	grpcServer    *server.Server
-	listen        string
-	opt           []grpc.ServerOption
+	moduleContext  *Context
+	grpcServer     *server.Server
+	maxConnections int32
+	listen         string
+	opt            []grpc.ServerOption
 }
 
-func (c *GrpcServerConfig) Initialize(moduleContext *Context, name string) {
+func (c *GrpcServerConfig) Initialize(moduleContext *Context, _ string) {
 	c.moduleContext = moduleContext
 }
 
@@ -24,7 +26,6 @@ func (c *GrpcServerConfig) Validate() {
 	if c.grpcServer == nil {
 		log.Fatal("grpc server not configured, please configure first!")
 	}
-
 }
 
 func (c *GrpcServerConfig) AddOpt(opt grpc.ServerOption) *GrpcServerConfig {
@@ -34,6 +35,13 @@ func (c *GrpcServerConfig) AddOpt(opt grpc.ServerOption) *GrpcServerConfig {
 	c.opt = append(c.opt, opt)
 
 	return c
+}
+
+func (c *GrpcServerConfig) MaxConnections(maxConnections int32) {
+	if c.grpcServer != nil {
+		log.Fatal("grpc server already configured, cannot set maxConnections!")
+	}
+	c.maxConnections = maxConnections
 }
 
 func (c *GrpcServerConfig) Listen(listen string) {
@@ -49,6 +57,9 @@ func (c *GrpcServerConfig) Server() *grpc.Server {
 	}
 
 	c.grpcServer = server.NewServer(c.opt...)
+	if c.maxConnections > 0 {
+		c.grpcServer.MaxConnections(c.maxConnections)
+	}
 
 	host := internal_web.Parse(c.listen)
 	c.grpcServer.HttpListen = host.String()
@@ -62,6 +73,8 @@ func (c *GrpcServerConfig) Server() *grpc.Server {
 	c.moduleContext.ShutdownHook.Add(internal.STAGE_8, func(ctx context.Context, timeoutInMs int64) {
 		c.grpcServer.AwaitTermination(ctx)
 	})
+
+	grpcPrometheus.Register(c.grpcServer.Srv)
 
 	return c.grpcServer.Srv
 }

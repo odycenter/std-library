@@ -80,7 +80,7 @@ func Handle(clientId, groupId string, record kafka.Message, process func(ctx con
 	if key != "" {
 		actionLog.PutContext("key", key)
 	}
-	var refId, client string
+	var refId, client, clientHostname string
 	for _, header := range record.Headers {
 		if header.Key == logKey.RefId {
 			refId = string(header.Value)
@@ -90,14 +90,21 @@ func Handle(clientId, groupId string, record kafka.Message, process func(ctx con
 			client = string(header.Value)
 			continue
 		}
+		if header.Key == logKey.ClientHostname {
+			clientHostname = string(header.Value)
+			continue
+		}
 	}
+	contextMap := make(map[string][]any)
 	if client != "" {
 		actionLog.Client = client
 	}
 	if refId != "" {
 		actionLog.RefId = refId
 	}
-	contextMap := make(map[string][]any)
+	if clientHostname != "" {
+		actionLog.PutContext(logKey.ClientHostname, clientHostname)
+	}
 	statMap := make(map[string]float64)
 	ctx = context.WithValue(ctx, logKey.Stat, statMap)
 	ctx = context.WithValue(ctx, logKey.Context, contextMap)

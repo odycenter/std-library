@@ -19,12 +19,10 @@ func (m *SystemModule) Initialize() {
 	}
 	m.LoadProperties(m.EnvProperties, "sys.properties")
 	appName := m.RequiredProperty("core.app.name")
-	if appName != "" {
-		logs.AppName = appName
-		app.Name = appName
-		if app.Local() {
-			m.ModuleContext.PropertyManager.EnableLocalPropertyOverride(appName)
-		}
+	logs.AppName = appName
+	app.Name = appName
+	if app.Local() {
+		m.ModuleContext.PropertyManager.EnableLocalPropertyOverride(appName)
 	}
 
 	m.configureCache()
@@ -33,15 +31,25 @@ func (m *SystemModule) Initialize() {
 	m.configureMongo()
 	m.configureKafka()
 	m.configurePyroScope()
+	m.configureMetric()
 	m.configureGRPC()
 	m.configureHTTP()
 }
 
 func (m *SystemModule) configureHTTP() {
 	httpListen := m.Property("sys.http.listen")
-	if httpListen != "" {
-		m.Http().Listen(httpListen)
+	if httpListen == "" {
+		return
 	}
+
+	m.Http().Listen(httpListen)
+
+	allowCIDR := m.Property("sys.api.allowCIDR")
+	if allowCIDR != "" {
+		m.Http().AllowAPI(NewIPv4RangePropertyValueParser(allowCIDR).Parse())
+	}
+
+	m.Http().APIContent(&m.EnvProperties)
 }
 
 func (m *SystemModule) configureDB() {
@@ -104,5 +112,13 @@ func (m *SystemModule) configureCache() {
 		} else {
 			m.Cache().Redis(host)
 		}
+	}
+}
+
+func (m *SystemModule) configureMetric() {
+	config := m.Metric()
+	metricListen := m.Property("sys.metric.listen")
+	if metricListen != "" {
+		config.Listen(metricListen)
 	}
 }

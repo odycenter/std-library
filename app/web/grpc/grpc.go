@@ -60,6 +60,10 @@ func (s *Server) AwaitTermination(ctx context.Context) {
 	s.Srv.GracefulStop()
 }
 
+func (s *Server) MaxConnections(maxConnections int32) {
+	s.shutdownInterceptor.MaxConnections(maxConnections)
+}
+
 // NewServer 创建新的GRPC服务
 func NewServer(opt ...grpc.ServerOption) *Server {
 	shutdownHandler := NewShutdownHandler()

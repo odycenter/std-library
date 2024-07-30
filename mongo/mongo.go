@@ -172,8 +172,8 @@ func Init(opts ...*Opt) {
 	}
 }
 
-func InitMigration(client *mongo.Client) {
-	pool.Store("default", client)
+func InitMigration(name string, client *mongo.Client) {
+	pool.Store(name, client)
 }
 
 // 创建连接
@@ -205,6 +205,7 @@ func newCli(opt *Opt) *mongo.Client {
 		opt.Timeout = defaultTimeout
 	}
 	cliOp.SetTimeout(opt.Timeout)
+	cliOp.SetMonitor(Monitor)
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 	c, err := mongo.Connect(ctx, cliOp)

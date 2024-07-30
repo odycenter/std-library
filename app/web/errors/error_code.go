@@ -21,7 +21,7 @@ type Info struct {
 }
 
 func GetInfo(code int, message ...string) Info {
-	return GetInfoBySkip(4, code, message...)
+	return GetInfoBySkip(3, code, message...)
 }
 
 func GetInfoBySkip(skip, code int, message ...string) Info {

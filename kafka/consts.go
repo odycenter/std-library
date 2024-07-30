@@ -5,9 +5,8 @@ import (
 	"sync"
 )
 
-var producers sync.Map     //map[string]UniversalProducer
-var v2Producers sync.Map   //map[string]UniversalProducer
-var consumers consumersMap //map[string][]Consumer
+var producers sync.Map   //map[string]UniversalProducer
+var v2Producers sync.Map //map[string]UniversalProducer
 
 // 起始偏移位置
 const (

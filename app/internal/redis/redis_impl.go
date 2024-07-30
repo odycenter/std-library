@@ -1,10 +1,10 @@
-// Package redis redis操作封装
 package internal_redis
 
 import (
 	"context"
 	"errors"
 	"github.com/redis/go-redis/v9"
+	"log"
 	app "std-library/app/conf"
 	"std-library/logs"
 	redismigration "std-library/redis"
@@ -17,6 +17,8 @@ type RedisImpl struct {
 	password    string
 	db          int
 	timeout     time.Duration
+	minSize     int
+	maxSize     int
 	client      redis.UniversalClient
 	initialized bool
 }
@@ -34,7 +36,13 @@ func (r *RedisImpl) Execute(_ context.Context) {
 
 	logs.Debug("redis Initialize, name=%s", r.name)
 	r.Initialize()
-	redismigration.InitMigration(r.client)
+
+	if r.name == "redis" {
+		redismigration.InitMigration("default", r.client)
+	} else {
+		redismigration.InitMigration(r.name, r.client)
+	}
+
 	r.initialized = true
 }
 
@@ -43,17 +51,23 @@ func (r *RedisImpl) Initialized() bool {
 }
 
 func (r *RedisImpl) Initialize() {
+	if r.minSize <= 0 {
+		r.minSize = 5
+	}
+	if r.maxSize <= 0 {
+		r.maxSize = 50
+	}
 	client := redis.NewClient(&redis.Options{
 		ClientName:      app.Name + ":" + r.name,
 		Addr:            r.host.String(),
 		Password:        r.password,
-		DialTimeout:     r.timeout,
+		DialTimeout:     5 * time.Second,
 		ReadTimeout:     r.timeout,
 		WriteTimeout:    r.timeout,
 		ConnMaxIdleTime: 30 * time.Minute,
 		ConnMaxLifetime: 120 * time.Minute,
-		MinIdleConns:    5,
-		PoolSize:        50,
+		MinIdleConns:    r.minSize,
+		PoolSize:        r.maxSize,
 		DB:              r.db,
 	})
 	r.client = client
@@ -73,6 +87,22 @@ func (r *RedisImpl) Timeout(timeout time.Duration) {
 
 func (r *RedisImpl) DB(db int) {
 	r.db = db
+}
+
+func (r *RedisImpl) PoolSize(minSize, maxSize int) {
+	if r.Initialized() {
+		log.Fatalf("redis is already initialized, can not set pool size! name=" + r.name)
+	}
+	r.minSize = minSize
+	r.maxSize = maxSize
+}
+
+func (r *RedisImpl) Client() redis.UniversalClient {
+	if !r.initialized {
+		log.Fatalf("redis must be initialized, name=" + r.name)
+		return nil
+	}
+	return r.client
 }
 
 func (r *RedisImpl) Close() {

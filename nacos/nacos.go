@@ -186,6 +186,7 @@ func SearchConfig(search, dataId, group string, page, pageSize int) (*model.Conf
 /*--------------------------------------------------------Naming------------------------------------------------------*/
 
 // RegisterInstance 注册实例
+// Deprecated: remove after v1.8.0
 func RegisterInstance(serviceName, group, ip string, port uint64) (bool, error) {
 	// 调用权重
 	weight := 10
@@ -211,6 +212,7 @@ func RegisterInstance(serviceName, group, ip string, port uint64) (bool, error) 
 }
 
 // DeregisterInstance 注销实例
+// Deprecated: remove after v1.8.0
 func DeregisterInstance(serviceName, group, ip string, port uint64) (bool, error) {
 	ok, err := namingClient.DeregisterInstance(vo.DeregisterInstanceParam{
 		Ip:          ip,
@@ -226,6 +228,7 @@ func DeregisterInstance(serviceName, group, ip string, port uint64) (bool, error
 }
 
 // GetService 获取服务信息
+// Deprecated: remove after v1.8.0
 func GetService(serviceName, group string) (model.Service, error) {
 	service, err := namingClient.GetService(vo.GetServiceParam{
 		ServiceName: serviceName,
@@ -238,6 +241,7 @@ func GetService(serviceName, group string) (model.Service, error) {
 }
 
 // SelectAllInstances 获取所有的实例列表
+// Deprecated: remove after v1.8.0
 func SelectAllInstances(serviceName, group string) ([]model.Instance, error) {
 	instance, err := namingClient.SelectAllInstances(vo.SelectAllInstancesParam{
 		ServiceName: serviceName,
@@ -250,6 +254,7 @@ func SelectAllInstances(serviceName, group string) ([]model.Instance, error) {
 }
 
 // SelectInstances 获取实例列表
+// Deprecated: remove after v1.8.0
 func SelectInstances(serviceName, group string, healthOnly bool) ([]model.Instance, error) {
 	instance, err := namingClient.SelectInstances(vo.SelectInstancesParam{
 		ServiceName: serviceName,
@@ -263,6 +268,7 @@ func SelectInstances(serviceName, group string, healthOnly bool) ([]model.Instan
 }
 
 // SelectOneHealthyInstance 获取一个健康的实例（加权随机轮询）
+// Deprecated: remove after v1.8.0
 func SelectOneHealthyInstance(serviceName, group string) (*model.Instance, error) {
 	instance, err := namingClient.SelectOneHealthyInstance(vo.SelectOneHealthInstanceParam{
 		ServiceName: serviceName,
@@ -275,6 +281,7 @@ func SelectOneHealthyInstance(serviceName, group string) (*model.Instance, error
 }
 
 // GetAllServicesInfo 获取服务名列表
+// Deprecated: remove after v1.8.0
 func GetAllServicesInfo(nameSpace, group string, page, pageSize uint32) (model.ServiceList, error) {
 	instance, err := namingClient.GetAllServicesInfo(vo.GetAllServiceInfoParam{
 		NameSpace: nameSpace,
@@ -289,6 +296,7 @@ func GetAllServicesInfo(nameSpace, group string, page, pageSize uint32) (model.S
 }
 
 // Subscribe 监听服务变化
+// Deprecated: remove after v1.8.0
 func Subscribe(serviceName, group string, fn func(services []model.Instance, err error)) error {
 	err := namingClient.Subscribe(&vo.SubscribeParam{
 		ServiceName:       serviceName,
@@ -302,6 +310,7 @@ func Subscribe(serviceName, group string, fn func(services []model.Instance, err
 }
 
 // Unsubscribe 取消监听服务变化
+// Deprecated: remove after v1.8.0
 func Unsubscribe(serviceName, group string, fn func(services []model.Instance, err error)) error {
 	err := namingClient.Unsubscribe(&vo.SubscribeParam{
 		ServiceName:       serviceName,

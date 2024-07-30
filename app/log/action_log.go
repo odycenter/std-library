@@ -42,8 +42,8 @@ func End(actionLog dto.ActionLog, result ...string) {
 	actionLog.End().Output(maskedFields)
 }
 
-func EndWithResult(actionLog dto.ActionLog, result string) {
-	actionLog.Result(result).End().Output(maskedFields)
+func Output(actionLog dto.ActionLog) {
+	actionLog.Output(maskedFields)
 }
 
 func HandleRecover(r interface{}, actionLog dto.ActionLog, contextMap map[string][]any) {

@@ -11,7 +11,6 @@ import (
 
 type ActionLog struct {
 	Id           string
-	Type         string
 	Timestamp    time.Time
 	result       string
 	Action       string
@@ -41,8 +40,8 @@ func (actionLog *ActionLog) Begin(action string, actionType string) {
 	actionLog.Id = util.GetIDGenerator().Next(date)
 	actionLog.Timestamp = date
 	actionLog.Action = action
-	actionLog.Type = actionType
 	actionLog.Context = make(map[string][]any)
+	actionLog.Context["action_type"] = []any{actionType}
 	actionLog.Stat = make(map[string]float64)
 }
 
@@ -67,6 +66,10 @@ func (actionLog *ActionLog) PutStat(key string, val float64) {
 
 func (actionLog *ActionLog) Elapsed() int64 {
 	return time.Since(actionLog.Timestamp).Nanoseconds()
+}
+
+func (actionLog *ActionLog) GetElapsed() int64 {
+	return actionLog.elapsed
 }
 
 func (actionLog *ActionLog) EnableTrace() {
@@ -111,7 +114,6 @@ func (actionLog *ActionLog) Output(maskedFields []string) {
 func (actionLog *ActionLog) String(maskedFields []string) string {
 	actionLogMessage := map[string]any{
 		logKey.Id:    actionLog.Id,
-		"type":       actionLog.Type,
 		"app":        app.Name,
 		"action":     actionLog.Action,
 		"@timestamp": actionLog.Timestamp,

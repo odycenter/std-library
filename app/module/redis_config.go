@@ -79,3 +79,10 @@ func (c *RedisConfig) DB(db int) {
 	c.db = db
 	c.redis.DB(db)
 }
+
+func (c *RedisConfig) PoolSize(minSize, maxSize int) {
+	if c.redis.Initialized() {
+		log.Fatalf("redis is already initialized, can not set poolSize! name=" + c.name)
+	}
+	c.redis.PoolSize(minSize, maxSize)
+}

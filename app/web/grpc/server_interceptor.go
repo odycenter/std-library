@@ -64,6 +64,10 @@ func serverInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySer
 		}
 	}
 
+	if value := md.Get(logKey.ClientHostname); len(value) > 0 {
+		actionLog.PutContext(logKey.ClientHostname, value[0])
+	}
+
 	if timeout := getServerTimeout(ctx, md); timeout > 0 {
 		actionLog.PutContext(timeoutOfDuration, timeout.String())
 

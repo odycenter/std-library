@@ -138,6 +138,7 @@ func (p *Producer) Publish(ctx context.Context, msg MessagePayload) error {
 		message.Headers = append(message.Headers, kafka.Header{Key: header.Key, Value: header.Value})
 	}
 	message.Headers = append(message.Headers, kafka.Header{Key: logKey.RefId, Value: []byte(actionLog.Id)})
+	message.Headers = append(message.Headers, kafka.Header{Key: logKey.ClientHostname, Value: []byte(app.LocalHostName())})
 	if app.Name != "" {
 		message.Headers = append(message.Headers, kafka.Header{Key: logKey.Client, Value: []byte(app.Name)})
 	}

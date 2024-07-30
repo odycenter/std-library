@@ -14,6 +14,8 @@ import (
 
 var CustomClientRequestBody func(req interface{}) interface{}
 
+var slowOperationThresholdInNanos = 20 * time.Second.Nanoseconds()
+
 func ClientInterceptor(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 	actionLog := actionlog.Begin(method, "grpc-client")
 	if existsId := ctx.Value(logKey.Id); existsId != nil {
@@ -27,7 +29,9 @@ func ClientInterceptor(ctx context.Context, method string, req, reply interface{
 		}
 	}()
 
-	ctx = metadata.AppendToOutgoingContext(ctx, logKey.RefId, actionLog.Id, logKey.Client, logKey.ClientPrefix+base64.URLEncoding.EncodeToString([]byte(app.Name)))
+	ctx = metadata.AppendToOutgoingContext(ctx, logKey.RefId, actionLog.Id,
+		logKey.Client, logKey.ClientPrefix+base64.URLEncoding.EncodeToString([]byte(app.Name)),
+		logKey.ClientHostname, app.LocalHostName())
 
 	traceLog := false
 	if trace := ctx.Value(logKey.Trace); trace != nil && trace.(string) == "true" {
@@ -51,7 +55,14 @@ func ClientInterceptor(ctx context.Context, method string, req, reply interface{
 	if err != nil {
 		actionlog.HandleRecover(err, actionLog, nil)
 	} else {
-		actionlog.End(actionLog, "ok")
+		actionLog.End()
+		if actionLog.Elapsed() > slowOperationThresholdInNanos {
+			actionLog.PutContext("slow_grpc", true)
+			actionLog.Result("warn")
+		} else {
+			actionLog.Result("ok")
+		}
+		actionlog.Output(actionLog)
 	}
 
 	return err
@@ -71,4 +82,8 @@ func getClientTimeout(ctx context.Context) time.Duration {
 	}
 
 	return 0
+}
+
+func SlowOperationThreshold(threshold time.Duration) {
+	slowOperationThresholdInNanos = threshold.Nanoseconds()
 }

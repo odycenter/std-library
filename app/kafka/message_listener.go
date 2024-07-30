@@ -6,6 +6,7 @@ import (
 	"github.com/segmentio/kafka-go"
 	internal "std-library/app/internal/module"
 	"std-library/logs"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -19,6 +20,7 @@ type MessageListener struct {
 	reader       []*kafka.Reader
 	poolSize     int
 	runningTasks int32
+	mu           sync.Mutex
 }
 
 func (m *MessageListener) SetPoolSize(size int) {
@@ -45,7 +47,9 @@ func (m *MessageListener) Start(ctx context.Context) {
 
 func (m *MessageListener) Run(clientId string) {
 	reader := Reader(clientId, m.Opt)
+	m.mu.Lock()
 	m.reader = append(m.reader, reader)
+	m.mu.Unlock()
 	for {
 		select {
 		case <-m.ctx.Done():

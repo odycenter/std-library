@@ -110,6 +110,10 @@ func (c *Common) Mongo(name ...string) *MongoConfig {
 	return c.ModuleContext.Config(configName("mongo", name...), func() Config { return &MongoConfig{} }).(*MongoConfig)
 }
 
+func (c *Common) Metric() *MetricConfig {
+	return c.ModuleContext.Config("metric", func() Config { return &MetricConfig{} }).(*MetricConfig)
+}
+
 func configName(prefix string, name ...string) string {
 	cname := prefix
 	if len(name) > 0 && name[0] != "" {

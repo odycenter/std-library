@@ -100,8 +100,8 @@ func Init(opts ...*Opt) {
 	}
 }
 
-func InitMigration(client redis.UniversalClient) {
-	pool.Store("default", &Cli{"default", nil, client, nil})
+func InitMigration(name string, client redis.UniversalClient) {
+	pool.Store(name, &Cli{name, nil, client, nil})
 }
 
 func newClient(opt *Opt) redis.UniversalClient {

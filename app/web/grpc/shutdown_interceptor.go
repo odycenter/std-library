@@ -3,12 +3,15 @@ package grpc
 import (
 	"context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"std-library/app/web"
-	"std-library/app/web/errors"
+	"std-library/app/web/metric"
 )
 
 type ShutdownInterceptor struct {
 	shutdownHandler *web.ShutdownHandler
+	maxConnections  int32
 }
 
 func NewShutdownHandler() *ShutdownInterceptor {
@@ -17,12 +20,32 @@ func NewShutdownHandler() *ShutdownInterceptor {
 	}
 }
 
-func (s *ShutdownInterceptor) handle(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+func (s *ShutdownInterceptor) MaxConnections(max int32) {
+	s.maxConnections = max
+	metric.GRPCMaxConnections.Set(float64(max))
+}
+
+func (s *ShutdownInterceptor) handle(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+	metric.GRPCConnectionAttempts.Inc()
+
+	if s.maxConnections > 0 {
+		current := s.shutdownHandler.ActiveRequests()
+		if current >= s.maxConnections {
+			metric.GRPCConnectionRejections.Inc()
+			return nil, status.Errorf(codes.Unavailable, "max requests reached: current %d, max %d", current, metric.GRPCMaxConnections)
+		}
+	}
+
 	s.shutdownHandler.Increment()
-	defer s.shutdownHandler.Decrement()
+	metric.GRPCActiveConnections.Inc()
+
+	defer func() {
+		s.shutdownHandler.Decrement()
+		metric.GRPCActiveConnections.Dec()
+	}()
 
 	if s.shutdownHandler.IsShutdown() {
-		return nil, errors.NewServiceUnavailable(503)
+		return nil, status.Error(codes.Unavailable, "server is shutting down")
 	}
 
 	return handler(ctx, req)

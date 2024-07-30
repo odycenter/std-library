@@ -72,7 +72,6 @@ func execute(ctx *context.Context, action string, task Task, executeType ...stri
 	innerCtx = context.WithValue(innerCtx, logKey.Context, contextMap)
 	task.Execute(innerCtx)
 	actionLog.AddContext(contextMap)
-	actionLog.AddContext(contextMap)
 
 	actionlog.End(actionLog, "ok")
 }

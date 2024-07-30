@@ -31,6 +31,9 @@ func (c *SchedulerController) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if r.Method == http.MethodGet && r.URL.Path == "/_sys/job" {
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(200)
 		w.Write(json.Stringify(c.scheduler.JobsInfo()))

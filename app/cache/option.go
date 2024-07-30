@@ -1,7 +1,9 @@
 package cache
 
 type Options struct {
-	OnError func(err error)
+	MinPoolSize int
+	MaxPoolSize int
+	OnError     func(err error)
 }
 
 type Option func(*Options)

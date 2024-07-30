@@ -113,7 +113,7 @@ func (s *SchedulerImpl) TriggerNow(name string, triggerActionId string) {
 		errors.NotFound("job not found, name=" + name)
 	}
 	p := s.create(name, process, triggerActionId)
-	p()
+	go p()
 }
 
 func (s *SchedulerImpl) JobsInfo() []scheduler.JobInfo {

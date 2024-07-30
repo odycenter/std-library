@@ -18,23 +18,22 @@ import (
 
 // Opt 配置信息
 type Opt struct {
-	AliasName      string
-	ServiceName    []string            //default []string,if have value(s),this option will only be used for this(these) service(s)--implement by init
-	DriverName     string              // driver name
-	DriverTyp      orm.DriverType      // driver type
-	Region         string              // region
-	Host           string              //host <must>
-	Port           string              //default 3306
-	User           string              //username <must>
-	Password       string              //password
-	DBName         string              //connect DB name <must>
-	SslMode        string              //default disable
-	TimeZone       *time.Location      //default local
-	MaxIdleConnes  int                 //default 10
-	MaxOpenConnes  int                 //default 30
-	IsolationLevel string              //default ""
-	OrmDebug       bool                //is open orm debug mode, output the SQl Exec
-	OrmLogFunc     func(query *OrmLog) //when open orm debug mode,log func can be specified
+	AliasName     string
+	ServiceName   []string            //default []string,if have value(s),this option will only be used for this(these) service(s)--implement by init
+	DriverName    string              // driver name
+	DriverTyp     orm.DriverType      // driver type
+	Region        string              // region
+	Host          string              //host <must>
+	Port          string              //default 3306
+	User          string              //username <must>
+	Password      string              //password
+	DBName        string              //connect DB name <must>
+	SslMode       string              //default disable
+	TimeZone      *time.Location      //default local
+	MaxIdleConnes int                 //default 10
+	MaxOpenConnes int                 //default 30
+	OrmDebug      bool                //is open orm debug mode, output the SQl Exec
+	OrmLogFunc    func(query *OrmLog) //when open orm debug mode,log func can be specified
 }
 
 type OrmLog struct {
@@ -172,13 +171,6 @@ func RegisterDataBase(opt *Opt) {
 		panic(err)
 	}
 	cfg.CheckConnLiveness = true
-	if opt.IsolationLevel != "" {
-		if cfg.Params == nil {
-			cfg.Params = map[string]string{"tx_isolation": opt.IsolationLevel}
-		} else {
-			cfg.Params["tx_isolation"] = opt.IsolationLevel
-		}
-	}
 	beforeConnect := mysql.BeforeConnect(func(ctx context.Context, cfg *mysql.Config) error {
 		if cfg.User == "cloud_iam" {
 			cfg.Passwd = authProvider.AccessToken()
@@ -195,19 +187,17 @@ func RegisterDataBase(opt *Opt) {
 	}
 
 	db := sql.OpenDB(connector)
-	if err != nil {
-		if db != nil {
-			db.Close()
-		}
-		err = fmt.Errorf("register db `%s`, %s", opt.getAliasName(), err.Error())
-		panic(err)
-	}
+
 	err = orm.AddAliasWthDB(opt.getAliasName(), opt.getDriverName(), db,
 		orm.MaxIdleConnections(opt.getMaxIdleConnes()),
 		orm.MaxOpenConnections(opt.getMaxOpenConnes()),
 		orm.ConnMaxIdletime(time.Hour*1),
 		orm.ConnMaxLifetime(time.Hour*2))
 	if err != nil {
+		if db != nil {
+			db.Close()
+		}
+		err = fmt.Errorf("register db `%s`, %s", opt.getAliasName(), err.Error())
 		log.Panic(err)
 	}
 }

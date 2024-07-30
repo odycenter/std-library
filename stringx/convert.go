@@ -123,7 +123,7 @@ func (t *T) Int64s() []int64 {
 	if len(t.v) == 0 {
 		return []int64{}
 	}
-	var elems []int64
+	elems := make([]int64, 0, len(t.v))
 	for _, v := range t.v {
 		elem, err := strconv.ParseInt(v, 0, 0)
 		if err != nil {

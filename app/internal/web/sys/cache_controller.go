@@ -30,6 +30,9 @@ func (c *CacheController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet && r.URL.Path == "/_sys/cache" {
 		views := c.list()
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(200)
 		w.Write(json.Stringify(views))
@@ -59,6 +62,9 @@ func (c *CacheController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if !ok {
 			errors.NotFoundError(404, "cache key not found, name="+name+", key="+key)
 		}
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(200)
 		w.Write(json.Stringify(value))

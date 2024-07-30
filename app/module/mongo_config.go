@@ -6,6 +6,7 @@ import (
 	"log"
 	internal "std-library/app/internal/module"
 	internalmongo "std-library/app/internal/mongo"
+	mongomigration "std-library/mongo"
 	"time"
 )
 
@@ -29,6 +30,11 @@ func (c *MongoConfig) Initialize(moduleContext *Context, name string) {
 func (c *MongoConfig) ForceEarlyStart() {
 	c.Validate()
 	c.mongoImpl.Execute(context.Background())
+	if c.name == "mongo" {
+		mongomigration.InitMigration("default", c.mongoImpl.Client())
+	} else {
+		mongomigration.InitMigration(c.name, c.mongoImpl.Client())
+	}
 }
 
 func (c *MongoConfig) Validate() {
@@ -93,4 +99,11 @@ func (c *MongoConfig) TLSConfig(conf *tls.Config) {
 		log.Fatalf("mongo is already initialized, can not set TLSConfig! name=" + c.name)
 	}
 	c.mongoImpl.TLSConfig(conf)
+}
+
+func (c *MongoConfig) SlowOperationThreshold(slowOperationThreshold time.Duration) {
+	if c.mongoImpl.Initialized() {
+		log.Fatalf("mongo is already initialized, can not set TLSConfig! name=" + c.name)
+	}
+	c.mongoImpl.SlowOperationThreshold(slowOperationThreshold)
 }

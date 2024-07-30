@@ -1,8 +1,8 @@
 package app
 
 import (
-	"errors"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"os"
 	"path/filepath"
 	"std-library/app/property"
@@ -24,26 +24,24 @@ func NewEnvResourceAssert() *EnvResourceAssert {
 	}
 }
 
-func (e *EnvResourceAssert) OverridesDefaultResources(t *testing.T) {
-	assert := assert.New(t)
+func (era *EnvResourceAssert) OverridesDefaultResources(t *testing.T) {
+	require.DirExists(t, era.mainResources)
+	require.DirExists(t, era.confPath)
 
-	assert.DirExists(e.confPath)
+	resourceDirs, err := era.resourceDirs()
+	require.NoError(t, err)
 
-	resourceDirs, err := e.resourceDirs()
-	if err != nil {
-		t.Fatal(err)
-	}
+	era.validateMainResourcesProperties(t)
 
 	for _, resourceDir := range resourceDirs {
-		assert.DirExists(resourceDir)
-		e.AssertOverridesDefault(resourceDir, assert)
-		e.AssertPropertyOverridesDefault(resourceDir, assert)
+		assert.DirExists(t, resourceDir)
+		era.AssertOverridesDefault(t, resourceDir)
+		era.AssertPropertyOverridesDefault(t, resourceDir)
 	}
-
 }
 
-func (e *EnvResourceAssert) resourceDirs() ([]string, error) {
-	files, err := os.ReadDir(e.confPath)
+func (era *EnvResourceAssert) resourceDirs() ([]string, error) {
+	files, err := os.ReadDir(era.confPath)
 	if err != nil {
 		return nil, err
 	}
@@ -51,39 +49,31 @@ func (e *EnvResourceAssert) resourceDirs() ([]string, error) {
 	var dirs []string
 	for _, f := range files {
 		if f.IsDir() {
-			dirs = append(dirs, filepath.Join(e.confPath, f.Name(), "resources"))
+			dirs = append(dirs, filepath.Join(era.confPath, f.Name(), "resources"))
 		}
 	}
 
 	return dirs, nil
 }
 
-func (e *EnvResourceAssert) AssertOverridesDefault(resourceDir string, assert *assert.Assertions) {
+func (era *EnvResourceAssert) AssertOverridesDefault(t *testing.T, resourceDir string) {
 	err := filepath.Walk(resourceDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if !info.IsDir() {
+		if !info.IsDir() || path == resourceDir {
 			return nil
 		}
 
-		base := filepath.Base(path)
-		if base == filepath.Base(resourceDir) {
-			return nil
-		}
-		defaultFile := filepath.Join(e.mainResources, base)
-		assert.DirExists(defaultFile)
-
+		assert.FileExists(t, filepath.Join(era.mainResources, filepath.Base(path)))
 		return nil
 	})
 
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 }
 
-func (e *EnvResourceAssert) AssertPropertyOverridesDefault(resourceDir string, assert *assert.Assertions) {
+func (era *EnvResourceAssert) AssertPropertyOverridesDefault(t *testing.T, resourceDir string) {
 	err := filepath.Walk(resourceDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -93,36 +83,49 @@ func (e *EnvResourceAssert) AssertPropertyOverridesDefault(resourceDir string, a
 			return nil
 		}
 
-		defaultPropertyFile := filepath.Join(e.mainResources, filepath.Base(path))
-		if _, err := os.Stat(defaultPropertyFile); os.IsNotExist(err) {
-			return err
-		}
-
-		defaultProperties := loadProperties(defaultPropertyFile)
-		envProperties := loadProperties(path)
-		keys := defaultProperties.Keys()
-		envKeys := envProperties.Keys()
-		validKeyOrder(keys, defaultPropertyFile)
-		validKeyOrder(envKeys, path)
-
-		assert.Equal(keys, envProperties.Keys(), "%v must override %v", path, defaultPropertyFile)
-
-		return nil
+		return era.validatePropertyFile(t, path)
 	})
 
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(t, err)
 }
 
-func validKeyOrder(keys []string, propertyFile string) {
-	for i, key := range keys {
-		if i == 0 {
-			continue
+func (era *EnvResourceAssert) validatePropertyFile(t *testing.T, path string) error {
+	defaultPropertyFile := filepath.Join(era.mainResources, filepath.Base(path))
+	if _, err := os.Stat(defaultPropertyFile); os.IsNotExist(err) {
+		return fmt.Errorf("default property file does not exist: %s", defaultPropertyFile)
+	}
+
+	defaultProperties := loadProperties(defaultPropertyFile)
+	envProperties := loadProperties(path)
+
+	keys := defaultProperties.Keys()
+	envKeys := envProperties.Keys()
+
+	era.validateKeyOrder(t, envKeys, path)
+
+	assert.Equal(t, keys, envKeys, "%v must override %v", path, defaultPropertyFile)
+	return nil
+}
+
+func (era *EnvResourceAssert) validateMainResourcesProperties(t *testing.T) {
+	err := filepath.Walk(era.mainResources, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
 		}
-		if strings.Compare(key, keys[i-1]) < 0 {
-			panic(errors.New(fmt.Sprintf("property key '%s' is not in the right order with previous property '%s', %v", key, keys[i-1], propertyFile)))
+		if filepath.Ext(path) == ".properties" {
+			properties := loadProperties(path)
+			era.validateKeyOrder(t, properties.Keys(), path)
 		}
+		return nil
+	})
+	assert.NoError(t, err)
+}
+
+func (era *EnvResourceAssert) validateKeyOrder(t *testing.T, keys []string, propertyFile string) {
+	for i := 1; i < len(keys); i++ {
+		assert.True(t, strings.Compare(keys[i-1], keys[i]) < 0,
+			"Property key '%s' is not in the right order with previous property '%s' in %v",
+			keys[i], keys[i-1], propertyFile)
 	}
 }
 

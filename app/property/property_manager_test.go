@@ -26,5 +26,9 @@ func TestProperty(t *testing.T) {
 	}
 	assert.Equal(t, "new123", manager.Get("abcKey1"))
 
-	assert.Equal(t, []string{"abcKey1", "app.key2", "key3"}, manager.Keys())
+	assert.Equal(t, "123=456k4,kk4", manager.Get("key4"))
+	assert.Equal(t, "key5,//k5,#kk5", manager.Get("key5"))
+	assert.Equal(t, "123", manager.Get("key6"))
+
+	assert.Equal(t, []string{"abcKey1", "app.key2", "key3", "key4", "key5", "key6"}, manager.Keys())
 }

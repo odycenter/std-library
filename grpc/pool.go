@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"std-library/app/util"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -92,6 +93,7 @@ func create(address string, option *Option) (Pool, error) {
 	if address == "" {
 		return nil, errors.New("invalid address settings")
 	}
+	util.ReadinessProbe(address)
 	if option.Dial == nil {
 		option.Dial = Dial
 	}

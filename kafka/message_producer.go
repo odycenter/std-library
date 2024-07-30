@@ -46,6 +46,7 @@ func (p *messageProducer) Publish(ctx context.Context, msg MessagePayload) error
 		headers = append(headers, kafka.Header{Key: header.Key, Value: header.Value})
 	}
 	headers = append(headers, kafka.Header{Key: logKey.RefId, Value: []byte(actionLog.Id)})
+	headers = append(headers, kafka.Header{Key: logKey.ClientHostname, Value: []byte(app.LocalHostName())})
 	if app.Name != "" {
 		headers = append(headers, kafka.Header{Key: logKey.Client, Value: []byte(app.Name)})
 	}

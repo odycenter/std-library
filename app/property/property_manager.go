@@ -36,24 +36,54 @@ func (m *Manager) LoadPropertiesByPath(path string) {
 
 func (m *Manager) LoadProperties(file fs.File) {
 	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, "//") {
-			continue
-		}
+	var key, value string
+	var isMultiLine bool
 
-		if !strings.Contains(line, "=") {
-			continue
+	addProperty := func() {
+		if key != "" {
+			m.add(strings.TrimSpace(key), strings.TrimSpace(value))
+			key, value = "", ""
 		}
-
-		split := strings.SplitN(line, "=", 2)
-		key := strings.TrimSpace(split[0])
-		value := strings.TrimSpace(split[1])
-		m.add(key, value)
 	}
 
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+
+		if isMultiLine {
+			if strings.HasSuffix(line, "\\") {
+				value += line[:len(line)-1]
+			} else {
+				value += line
+				isMultiLine = false
+				addProperty()
+			}
+			continue
+		}
+
+		if line == "" || line[0] == '#' || strings.HasPrefix(line, "//") {
+			continue
+		}
+
+		index := strings.IndexByte(line, '=')
+		if index == -1 {
+			continue
+		}
+
+		key = line[:index]
+		value = line[index+1:]
+
+		if strings.HasSuffix(value, "\\") {
+			isMultiLine = true
+			value = value[:len(value)-1]
+		} else {
+			addProperty()
+		}
+	}
+
+	addProperty()
+
 	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		log.Fatal("Error reading properties:", err)
 	}
 }
 

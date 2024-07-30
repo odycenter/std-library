@@ -1,5 +1,25 @@
 ## Change log
 
+### 1.7.48 (05/30/2024 - 07/29/2024)
+
+* api: /_sys/api to get http api definition, and use sys.api.allowCIDR to restrict access
+* property: multi line supported
+* metric: metrics server supported
+* redis/mongo: multi config supported
+* redis/cache: pool size supported
+* grpc:
+  - `client retry 5 times when server response error UNAVAILABLE`
+  - `client slow grpc log`
+  - `client support migration option to switch grpc.NewClient for create grpc.ClientConn`
+  - `ReadinessProbe when register client by default`
+  - `maxConnections supported`
+
+
+### 1.7.28 (05/29/2024 - 05/30/2024)
+
+* mongo: execution elapsed monitor
+
+
 ### 1.7.27 (05/29/2024 - 05/29/2024)
 
 * scheduler: /_sys/job/:name to trigger job

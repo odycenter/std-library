@@ -3,8 +3,9 @@
 package jwt
 
 import (
+	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"time"
 )
 
@@ -29,20 +30,15 @@ func Parse(otk, salt string) (claims map[string]any) {
 		return []byte(salt), nil
 	})
 	if err != nil {
-		ve, ok := err.(*jwt.ValidationError)
-		if ok {
-			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				fmt.Println("That's Not A Token:", token, err)
-				return
-			} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-				fmt.Println("Token Has Expired:", token, err)
-				return
-			} else {
-				fmt.Println("Invalid Token:", token, err)
-				return
-			}
-		} else {
-			fmt.Println("Token Parse Failed:", token, err)
+		switch {
+		case errors.Is(err, jwt.ErrTokenMalformed):
+			fmt.Println("That's Not A Token:", token, err)
+			return
+		case errors.Is(err, jwt.ErrTokenExpired) || errors.Is(err, jwt.ErrTokenNotValidYet):
+			fmt.Println("Token Has Expired:", token, err)
+			return
+		default:
+			fmt.Println("Invalid Token:", err)
 			return
 		}
 	}

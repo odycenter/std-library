@@ -22,6 +22,7 @@ type Option struct {
 	RecycleDur           uint64                                                      //回收间隔时间(s)。最小间隔必须大于10s
 	Logger               Logger                                                      //log打印
 	DialOptions          []grpc.DialOption                                           //额外的grpc链接设置
+	disableMigration     bool
 }
 
 // DefaultOptions 默认配置
@@ -47,6 +48,7 @@ func (o *Option) Copy() *Option {
 		RecycleDur:           o.RecycleDur,
 		Logger:               o.Logger,
 		DialOptions:          o.DialOptions,
+		disableMigration:     o.disableMigration,
 	}
 }
 
@@ -67,6 +69,10 @@ func (o *Option) getDialOptions() []grpc.DialOption {
 	return o.DialOptions
 }
 
+func (o *Option) DisableMigration() {
+	o.disableMigration = true
+}
+
 // Dial 返回默认配置的 grpc 连接。支持填写IPv4和hostname
 func Dial(address string, opt *Option) (*grpc.ClientConn, error) {
 	var port = "80"
@@ -79,26 +85,24 @@ func Dial(address string, opt *Option) (*grpc.ClientConn, error) {
 		}
 		address = addresses[0]
 	}
-	//var ip net.IP
-	//ip = net.ParseIP(address)
-	//if ip == nil {
-	//	ips, err := net.LookupIP(address)
-	//	if err != nil {
-	//		return nil, fmt.Errorf("GRPC netlookup <%s> ip failed %s", address, err.Error())
-	//	}
-	//	if len(ips) == 0 {
-	//		return nil, fmt.Errorf("GRPC <%s> no ip", address)
-	//	}
-	//	ip = ips[0]
-	//}
-	//
-	//target := fmt.Sprint(ip.String(), ":", port) //默认到集群负载均衡的80
+
+	retryPolicy := `{
+    "loadBalancingConfig": [ { "round_robin": {} } ],
+    "methodConfig": [{
+     	"name": [{}],
+        "waitForReady": true,
+        "retryPolicy": {
+            "MaxAttempts": 5,
+            "InitialBackoff": ".5s",
+            "MaxBackoff": "3s",
+            "BackoffMultiplier": 1.5,
+            "RetryableStatusCodes": [ "UNAVAILABLE" ]
+        }
+    }]
+}`
 	target := fmt.Sprint(address, ":", port)
-	ctx, cancel := context.WithTimeout(context.Background(), DialTimeout)
-	defer cancel()
-	options := []grpc.DialOption{grpc.WithUnaryInterceptor(grpcweb.ClientInterceptor)}
-	options = append(options, opt.getDialOptions()...)
-	return grpc.DialContext(ctx, target, append(options, grpc.WithTransportCredentials(insecure.NewCredentials()),
+	options := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithConnectParams(grpc.ConnectParams{Backoff: backoff.DefaultConfig, MinConnectTimeout: MinConnectTimeout}),
 		grpc.WithInitialWindowSize(InitialWindowSize),
 		grpc.WithInitialConnWindowSize(InitialConnWindowSize),
@@ -106,10 +110,21 @@ func Dial(address string, opt *Option) (*grpc.ClientConn, error) {
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:                KeepAliveTime,
 			Timeout:             KeepAliveTimeout,
-			PermitWithoutStream: false,
+			PermitWithoutStream: true,
 		}),
-		grpc.WithBlock(), //此处添加block防止因为grpc address不可用导致的无限重试问题)
-	)...)
+		grpc.WithDefaultServiceConfig(retryPolicy),
+		grpc.WithUnaryInterceptor(grpcweb.ClientInterceptor),
+	}
+	options = append(options, opt.getDialOptions()...)
+
+	if opt.disableMigration {
+		options = append(options, grpc.WithBlock())
+		ctx, cancel := context.WithTimeout(context.Background(), DialTimeout)
+		defer cancel()
+		return grpc.DialContext(ctx, target, options...)
+	}
+
+	return grpc.NewClient("dns:///"+target, options...)
 }
 
 //封装 grpc.DialOption
