@@ -18,22 +18,23 @@ import (
 
 // Opt 配置信息
 type Opt struct {
-	AliasName     string
-	ServiceName   []string            //default []string,if have value(s),this option will only be used for this(these) service(s)--implement by init
-	DriverName    string              // driver name
-	DriverTyp     orm.DriverType      // driver type
-	Region        string              // region
-	Host          string              //host <must>
-	Port          string              //default 3306
-	User          string              //username <must>
-	Password      string              //password
-	DBName        string              //connect DB name <must>
-	SslMode       string              //default disable
-	TimeZone      *time.Location      //default local
-	MaxIdleConnes int                 //default 10
-	MaxOpenConnes int                 //default 30
-	OrmDebug      bool                //is open orm debug mode, output the SQl Exec
-	OrmLogFunc    func(query *OrmLog) //when open orm debug mode,log func can be specified
+	AliasName       string
+	ServiceName     []string            //default []string,if have value(s),this option will only be used for this(these) service(s)--implement by init
+	DriverName      string              // driver name
+	DriverTyp       orm.DriverType      // driver type
+	Region          string              // region
+	Host            string              //host <must>
+	Port            string              //default 3306
+	User            string              //username <must>
+	Password        string              //password
+	DBName          string              //connect DB name <must>
+	SslMode         string              //default disable
+	TimeZone        *time.Location      //default local
+	MaxIdleConnes   int                 //default 10
+	MaxOpenConnes   int                 //default 30
+	ConnMaxIdleTime time.Duration       //default 30 minutes
+	OrmDebug        bool                //is open orm debug mode, output the SQl Exec
+	OrmLogFunc      func(query *OrmLog) //when open orm debug mode,log func can be specified
 }
 
 type OrmLog struct {
@@ -72,10 +73,10 @@ func (opt *Opt) getPort() string {
 }
 
 func (opt *Opt) getMaxIdleConnes() int {
-	if opt.MaxOpenConnes == 0 {
+	if opt.MaxIdleConnes == 0 {
 		return 10
 	}
-	return opt.MaxOpenConnes
+	return opt.MaxIdleConnes
 }
 
 func (opt *Opt) getMaxOpenConnes() int {
@@ -83,6 +84,13 @@ func (opt *Opt) getMaxOpenConnes() int {
 		return 30
 	}
 	return opt.MaxOpenConnes
+}
+
+func (opt *Opt) getConnMaxIdleTime() time.Duration {
+	if opt.ConnMaxIdleTime <= 0 {
+		return time.Minute * 30
+	}
+	return opt.ConnMaxIdleTime
 }
 
 func (opt *Opt) getTimeZone() *time.Location {
@@ -138,8 +146,8 @@ func Init(opts ...*Opt) {
 			err = orm.RegisterDataBase(opt.getAliasName(), opt.getDriverName(), dsn,
 				orm.MaxIdleConnections(opt.getMaxIdleConnes()),
 				orm.MaxOpenConnections(opt.getMaxOpenConnes()),
-				orm.ConnMaxIdletime(time.Hour*1),
-				orm.ConnMaxLifetime(time.Hour*2))
+				orm.ConnMaxIdletime(opt.getConnMaxIdleTime()),
+				orm.ConnMaxLifetime(opt.getConnMaxIdleTime()*2))
 			if err != nil {
 				log.Panic(err)
 			}
@@ -191,8 +199,8 @@ func RegisterDataBase(opt *Opt) {
 	err = orm.AddAliasWthDB(opt.getAliasName(), opt.getDriverName(), db,
 		orm.MaxIdleConnections(opt.getMaxIdleConnes()),
 		orm.MaxOpenConnections(opt.getMaxOpenConnes()),
-		orm.ConnMaxIdletime(time.Hour*1),
-		orm.ConnMaxLifetime(time.Hour*2))
+		orm.ConnMaxIdletime(opt.getConnMaxIdleTime()),
+		orm.ConnMaxLifetime(opt.getConnMaxIdleTime()*2))
 	if err != nil {
 		if db != nil {
 			db.Close()

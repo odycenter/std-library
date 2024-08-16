@@ -3,8 +3,9 @@ package dbase
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/beego/beego/v2/client/orm"
-	"std-library/logs"
+	"log/slog"
 	"time"
 )
 
@@ -154,9 +155,9 @@ func (d *DB) Begin() (*TxOrm, error) {
 	go func() {
 		select {
 		case <-ctx.Done():
-			logs.Debug("tx process done")
+			slog.Debug("tx process done")
 		case err := <-chErr:
-			logs.Error("tx process fail, error:", err)
+			slog.Error(fmt.Sprintf("tx process fail, error: %v", err))
 			cancel()
 		}
 	}()

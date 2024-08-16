@@ -1,9 +1,9 @@
 package beego
 
 import (
+	"log/slog"
 	"net/http"
 	"std-library/app/web"
-	"std-library/logs"
 )
 
 const HealthCheckPath = "/health-check"
@@ -25,7 +25,7 @@ func (f *IOHandler) Handler(next http.Handler) http.Handler {
 		defer f.shutdownHandler.Decrement()
 
 		if f.shutdownHandler.IsShutdown() {
-			logs.WarnWithCtx(r.Context(), "reject request due to server is shutting down, requestURL="+r.URL.Path)
+			slog.WarnContext(r.Context(), "reject request due to server is shutting down, requestURL="+r.URL.Path)
 			// ask client not set keep alive for current connection, with send header "connection: close",
 			// this does no effect with http/2.0, only for http/1.1
 			w.Header().Set("Connection", "close")

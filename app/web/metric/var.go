@@ -23,3 +23,27 @@ var (
 		Help: "The total number of rejected connections due to limit",
 	})
 )
+
+var (
+	ExecutorRunning = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "executor_running",
+			Help: "Number of running tasks in executor",
+		},
+		[]string{"name"},
+	)
+	ExecutorFree = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "executor_free",
+			Help: "Number of free workers in executor",
+		},
+		[]string{"name"},
+	)
+	ExecutorWaiting = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "executor_waiting",
+			Help: "Number of waiting tasks in executor",
+		},
+		[]string{"name"},
+	)
+)

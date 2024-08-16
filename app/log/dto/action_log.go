@@ -2,8 +2,9 @@ package dto
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	app "std-library/app/conf"
+	internallog "std-library/app/internal/log"
 	"std-library/app/log/consts/logKey"
 	"std-library/app/log/util"
 	"time"
@@ -106,7 +107,7 @@ func (actionLog *ActionLog) AddStat(statMap map[string]float64) {
 }
 
 func (actionLog *ActionLog) Output(maskedFields []string) {
-	log.Println(actionLog.String(maskedFields))
+	internallog.Logger.Println(actionLog.String(maskedFields))
 	actionLog.Context = nil
 	actionLog.Stat = nil
 }
@@ -176,7 +177,7 @@ func (actionLog *ActionLog) String(maskedFields []string) string {
 
 	actionLogByte, e := json.Marshal(actionLogMessage)
 	if e != nil {
-		log.Println(e.Error())
+		slog.Error(e.Error())
 		return ""
 	}
 

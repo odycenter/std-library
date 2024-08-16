@@ -2,12 +2,13 @@ package module
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"log/slog"
 	"runtime"
 	app "std-library/app/conf"
 	internal "std-library/app/internal/module"
 	"std-library/app/kafka"
-	"std-library/logs"
 	"sync"
 )
 
@@ -31,7 +32,7 @@ func (c *KafkaConfig) Initialize(moduleContext *Context, name string) {
 	if c.poolSize > 4 {
 		c.poolSize = 4
 	}
-	logs.Info("kafka consumer default poolSize: ", c.poolSize)
+	slog.Info(fmt.Sprintf("kafka consumer default poolSize: %d", c.poolSize))
 	c.m = make(map[string]*kafka.MessageListener)
 	c.moduleContext.StartupHook.Add(c)
 	c.moduleContext.ShutdownHook.Add(internal.STAGE_1, func(ctx context.Context, timeoutInMs int64) {

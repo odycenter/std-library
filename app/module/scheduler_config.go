@@ -23,9 +23,9 @@ func (c *SchedulerConfig) Initialize(moduleContext *Context, name string) {
 		c.scheduler.AwaitTermination(ctx, timeoutInMs)
 	})
 
-	schedulerController := internal_sys.NewSchedulerController(c.scheduler)
-	web.Handler("/_sys/job", schedulerController)
-	web.Handler("/_sys/job/*", schedulerController)
+	controller := internal_sys.NewSchedulerController(c.scheduler)
+	web.Handler("/_sys/job", controller)
+	web.Handler("/_sys/job/*", controller)
 }
 
 func (c *SchedulerConfig) AddFuncJob(spec string, process func(ctx context.Context), panicOnAddError ...bool) (scheduler.JobID, error) {

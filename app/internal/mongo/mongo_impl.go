@@ -3,13 +3,14 @@ package internal_mongo
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"log/slog"
 	app "std-library/app/conf"
 	actionlog "std-library/app/log"
-	"std-library/logs"
 	"strings"
 	"time"
 )
@@ -48,7 +49,7 @@ func (m *MongoImpl) Execute(_ context.Context) {
 		return
 	}
 
-	logs.Debug("mongo Initialize, name=%s", m.name)
+	slog.Debug(fmt.Sprintf("mongo Initialize, name=%s", m.name))
 	m.Initialize()
 }
 
@@ -85,7 +86,7 @@ func (m *MongoImpl) Initialize() {
 func (m *MongoImpl) Close() {
 	err := m.client.Disconnect(context.Background())
 	if err != nil {
-		logs.Error("close mongo client error, name=%s, uri=%s, err=%v", m.name, m.uri, err)
+		slog.Error("close mongo client error", "name", m.name, "uri", m.uri, "error", err)
 	}
 }
 
@@ -153,7 +154,7 @@ func (m *MongoImpl) Monitor() *event.CommandMonitor {
 
 			if elapsed > m.slowOperationThresholdInNanos {
 				actionlog.Context(&ctx, "slow_operation", true)
-				logs.WarnWithCtx(ctx, "[SLOW_OPERATION] slow %s, duration %v, db: %s", event.CommandName, event.CommandFinishedEvent.Duration, event.DatabaseName)
+				slog.WarnContext(ctx, fmt.Sprintf("[SLOW_OPERATION] slow %s, duration %v, db: %s", event.CommandName, event.CommandFinishedEvent.Duration, event.DatabaseName))
 			}
 		},
 		Failed: func(ctx context.Context, event *event.CommandFailedEvent) {
@@ -162,7 +163,7 @@ func (m *MongoImpl) Monitor() *event.CommandMonitor {
 
 			if elapsed > m.slowOperationThresholdInNanos {
 				actionlog.Context(&ctx, "slow_operation", true)
-				logs.WarnWithCtx(ctx, "[SLOW_OPERATION] slow %s, duration %v, db: %s", event.CommandName, event.CommandFinishedEvent.Duration, event.DatabaseName)
+				slog.WarnContext(ctx, fmt.Sprintf("[SLOW_OPERATION] slow %s, duration %v, db: %s", event.CommandName, event.CommandFinishedEvent.Duration, event.DatabaseName))
 			}
 		},
 	}

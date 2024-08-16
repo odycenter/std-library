@@ -1,9 +1,9 @@
 package metric
 
 import (
+	"log/slog"
 	"net/http"
 	internal_http "std-library/app/internal/web/http"
-	"std-library/logs"
 	"std-library/nets"
 )
 
@@ -18,7 +18,7 @@ func (h *AccessHandler) Handler(next http.Handler) http.Handler {
 		ip := nets.IP(r).String()
 		err := h.accessControl.Validate(ip)
 		if err != nil {
-			logs.WarnWithCtx(r.Context(), "access metrics denied, ip="+ip)
+			slog.WarnContext(r.Context(), "access metrics denied, ip="+ip)
 			w.Header().Set("Connection", "close")
 			w.WriteHeader(http.StatusForbidden)
 			w.Write([]byte("access denied"))

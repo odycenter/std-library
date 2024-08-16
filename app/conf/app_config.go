@@ -2,6 +2,8 @@ package app
 
 import (
 	"flag"
+	"fmt"
+	"log/slog"
 	"os"
 	"std-library/app/property"
 	"std-library/logs"
@@ -45,7 +47,7 @@ func Env() string {
 		envVarName := property.EnvVarName(envStr)
 		envVarValue := os.Getenv(envVarName)
 		if envVarValue != "" {
-			logs.Warn("found overridden property by os.env var [%s], key=%s, value=%s", envVarName, envStr, envVarValue)
+			slog.Warn(fmt.Sprintf("found overridden property by os.env var [%s], key=%s, value=%s", envVarName, envStr, envVarValue))
 			env = envVarValue
 		}
 	})

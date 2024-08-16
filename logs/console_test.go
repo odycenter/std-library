@@ -8,21 +8,16 @@ import (
 )
 
 func TestConsole(t *testing.T) {
-	l := logs.NewLogger(10000)
-	l.SetLogFuncCallDepth(2)
-	_ = l.SetLogger(logs.AdapterConsole, &logs.Option{
-		Adapter:  logs.AdapterConsole,
-		LogLevel: logs.LevelDebug,
-	})
-	testConsoleCalls(l)
+	logs.SetLogFuncCallDepth(2)
+	logs.SetLevel(logs.LevelDebug)
+	testConsoleCalls()
 }
 
-func testConsoleCalls(dl *logs.DefaultLog) {
-	dl.Alert("alert")
-	dl.Critical("critical")
-	dl.Error("error")
-	dl.Notice("notice")
-	dl.Debug("debug")
+func testConsoleCalls() {
+	logs.Error("error")
+
+	logs.Notice("notice")
+	logs.Debug("debug")
 	ctx := context.WithValue(context.Background(), logKey.Id, "test-id")
 	logs.DebugWithCtx(ctx, "debug, log, name: %v", "test123")
 }

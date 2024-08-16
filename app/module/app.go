@@ -2,12 +2,13 @@ package module
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	actionlog "std-library/app/log"
 	"std-library/app/log/consts/logKey"
 	"std-library/app/log/dto"
-	"std-library/logs"
 	"syscall"
 )
 
@@ -46,10 +47,10 @@ func (a *App) Start() {
 	a.ModuleContext.Validate()
 
 	a.ModuleContext.Probe.Check(a.ctx)
-	logs.InfoWithCtx(a.ctx, "execute startup tasks")
+	slog.InfoContext(a.ctx, "execute startup tasks")
 	a.ModuleContext.StartupHook.DoInitialize(a.ctx)
 	a.ModuleContext.StartupHook.DoStart(a.ctx)
-	logs.InfoWithCtx(a.ctx, "startup completed, elapsed=%v", a.actionLog.Elapsed())
+	slog.InfoContext(a.ctx, fmt.Sprintf("startup completed, elapsed=%v", a.actionLog.Elapsed()))
 	a.cleanup()
 	actionlog.End(a.actionLog, "ok")
 	a.shutdownHook()

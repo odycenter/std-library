@@ -2,9 +2,9 @@ package demo
 
 import (
 	"context"
+	"log/slog"
 	"path/filepath"
 	"std-library/app/module"
-	"std-library/logs"
 	reflects "std-library/reflect"
 	"strconv"
 	"time"
@@ -17,12 +17,18 @@ type ScheduleModule struct {
 func (m *ScheduleModule) Initialize() {
 	m.Schedule().SetPanicOnAnyAddError(true)
 
-	_, _ = m.Schedule().AddDisallowConcurrent("@every 2s", &TestJob{})
+	//_, _ = m.Schedule().AddDisallowConcurrent("@every 3s", &TestJob{})
 
-	_, _ = m.Schedule().AddFuncJobWithName(Wrapper("@every 1s", func(ctx context.Context) {
-		logs.Info("every 1s")
-		// loop 10 times
+	_, _ = m.Schedule().AddFuncJobWithName(Wrapper("@every 5s", func(ctx context.Context) {
+		slog.Debug("every 1s")
+		slog.Info("every 1s")
+		slog.Warn("every 1s")
+		slog.Error("every 1s")
 	}))
+
+	//_, _ = m.Schedule().AddFuncJobWithName("@every 10s", "funcNameYouDefined", func(ctx context.Context) {
+	//	slog.Info("every 1s")
+	//})
 }
 
 func Wrapper(spec string, callback func(ctx context.Context)) (string, string, func(context.Context)) {
@@ -35,10 +41,10 @@ type TestJob struct {
 }
 
 func (t *TestJob) Execute(ctx context.Context) {
-	logs.InfoWithCtx(ctx, "trigger every 2s")
+	slog.InfoContext(ctx, "trigger every 2s")
 	// loop 10 times
 	for i := 0; i < 100; i++ {
-		logs.Info("sleep 1 sec, loop: " + strconv.Itoa(i))
+		slog.Info("sleep 1 sec, loop: " + strconv.Itoa(i))
 		time.Sleep(10 * time.Second)
 	}
 }

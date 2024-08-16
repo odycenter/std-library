@@ -3,10 +3,11 @@ package internal
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
+	"log/slog"
 	"net"
 	"net/http"
-	"std-library/logs"
 	"strings"
 	"time"
 )
@@ -28,7 +29,7 @@ func (r *ReadinessProbe) AddURL(url string) {
 }
 
 func (r *ReadinessProbe) Check(ctx context.Context) {
-	logs.InfoWithCtx(ctx, "check readiness")
+	slog.InfoContext(ctx, "check readiness")
 	start := time.Now()
 
 	r.checkDNS(ctx)
@@ -38,7 +39,7 @@ func (r *ReadinessProbe) Check(ctx context.Context) {
 	r.urls = nil
 
 	elapsed := time.Since(start)
-	logs.InfoWithCtx(ctx, "Readiness check completed in %s", elapsed)
+	slog.InfoContext(ctx, fmt.Sprintf("Readiness check completed in %s", elapsed))
 }
 
 func (r *ReadinessProbe) checkDNS(ctx context.Context) {
@@ -65,7 +66,7 @@ func (r *ReadinessProbe) sendHTTPRequest(ctx context.Context, url string) error 
 			if time.Since(start) >= maxWaitTime {
 				return errors.New("readiness check failed, url=" + url)
 			}
-			logs.WarnWithCtx(ctx, "[NOT_READY] http probe failed, retry soon, url=%s", url)
+			slog.WarnContext(ctx, fmt.Sprintf("[NOT_READY] http probe failed, retry soon, url=%s", url))
 			time.Sleep(5 * time.Second)
 			continue
 		}
@@ -84,7 +85,7 @@ func ResolveHost(ctx context.Context, hostname string) {
 			if time.Since(start) >= maxWaitTime {
 				log.Fatal("readiness check failed, host=" + hostname)
 			}
-			logs.WarnWithCtx(ctx, "[NOT_READY] dns probe failed, retry soon, host=%s", hostname)
+			slog.WarnContext(ctx, fmt.Sprintf("[NOT_READY] dns probe failed, retry soon, host=%s", hostname))
 			time.Sleep(5 * time.Second)
 			continue
 		}

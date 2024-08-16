@@ -2,12 +2,13 @@ package kafka
 
 import (
 	"context"
+	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"log/slog"
 	"std-library/app/async"
 	app "std-library/app/conf"
 	actionlog "std-library/app/log"
 	"std-library/app/log/consts/logKey"
-	"std-library/logs"
 	"strings"
 )
 
@@ -72,9 +73,9 @@ func (p *messageProducer) Publish(ctx context.Context, msg MessagePayload) error
 	if kafkaError, ok := err.(kafka.Error); ok && kafkaError.Code() == kafka.ErrQueueFull {
 		if !DisableForceProducerFlush {
 			async.RunFuncWithName(&ctx, "force-flush-message", func(ctx context.Context) {
-				logs.ErrorWithCtx(ctx, "Kafka local queue full error!! trying to Flush ...")
+				slog.ErrorContext(ctx, "Kafka local queue full error!! trying to Flush ...")
 				flushedMessages := p.producer.Flush(30 * 1000)
-				logs.InfoWithCtx(ctx, "Flushed kafka messages. Outstanding events still un-flushed: %d", flushedMessages)
+				slog.InfoContext(ctx, fmt.Sprintf("Flushed kafka messages. Outstanding events still un-flushed: %d", flushedMessages))
 			})
 		}
 	}
@@ -136,7 +137,7 @@ func CreateProducer(opt *ProducerOption) {
 						Value:     m.Value,
 					}
 					if m.TopicPartition.Error != nil {
-						logs.Warn("Delivery failed: %v\n", m.TopicPartition.Error)
+						slog.Warn(fmt.Sprintf("Delivery failed: %v\n", m.TopicPartition.Error))
 					}
 					opt.OnDelivery([]DeliveryReport{message}, m.TopicPartition.Error)
 				default:

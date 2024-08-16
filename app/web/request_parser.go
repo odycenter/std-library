@@ -2,12 +2,13 @@ package web
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 	"net/http"
 	actionlog "std-library/app/log"
 	"std-library/app/log/consts/logKey"
 	"std-library/app/log/dto"
 	"std-library/app/web/http/header"
-	"std-library/logs"
 	"std-library/nets"
 	"strings"
 	"time"
@@ -104,7 +105,7 @@ func RequestBody(actionLog dto.ActionLog, request *http.Request) {
 	elapsed := time.Since(stopwatch).Nanoseconds()
 	actionLog.Stat["parse_form_elapsed"] = float64(elapsed)
 	if err != nil {
-		logs.Warn("parse form error", err.Error())
+		slog.Warn(fmt.Sprintf("parse form error", err.Error()))
 		return
 	}
 	result := parseForm(request)

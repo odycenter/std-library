@@ -2,10 +2,11 @@ package property
 
 import (
 	"bufio"
+	"fmt"
 	"io/fs"
 	"log"
+	"log/slog"
 	"os"
-	"std-library/logs"
 	"strings"
 )
 
@@ -105,7 +106,7 @@ func (m *Manager) Get(key string, required ...bool) string {
 	}
 
 	if !ok {
-		logs.Debug("property not found! key=%s", key)
+		slog.Debug(fmt.Sprintf("property not found! key=%s", key))
 		return ""
 	}
 
@@ -117,7 +118,7 @@ func (m *Manager) Get(key string, required ...bool) string {
 	envVarName := EnvVarName(key)
 	envVarValue := os.Getenv(envVarName)
 	if envVarValue != "" {
-		logs.Warn("found overridden property by env var %s, key=%s, value=%s", envVarName, key, MaskValue(key, envVarValue))
+		slog.Warn(fmt.Sprintf("found overridden property by env var %s, key=%s, value=%s", envVarName, key, MaskValue(key, envVarValue)))
 		return envVarValue
 	}
 

@@ -2,9 +2,10 @@ package mongo
 
 import (
 	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/event"
+	"log/slog"
 	actionlog "std-library/app/log"
-	"std-library/logs"
 	"strings"
 	"time"
 )
@@ -17,7 +18,7 @@ var Monitor = &event.CommandMonitor{
 
 		if elapsed > defaultSlowOperation {
 			actionlog.Context(&ctx, "slow_operation", true)
-			logs.WarnWithCtx(ctx, "[SLOW_OPERATION] slow %s, duration %v, db: %s", event.CommandName, event.CommandFinishedEvent.Duration, event.DatabaseName)
+			slog.WarnContext(ctx, fmt.Sprintf("[SLOW_OPERATION] slow %s, duration %v, db: %s", event.CommandName, event.CommandFinishedEvent.Duration, event.DatabaseName))
 		}
 	},
 	Failed: func(ctx context.Context, event *event.CommandFailedEvent) {
@@ -26,7 +27,7 @@ var Monitor = &event.CommandMonitor{
 
 		if elapsed > defaultSlowOperation {
 			actionlog.Context(&ctx, "slow_operation", true)
-			logs.WarnWithCtx(ctx, "[SLOW_OPERATION] slow %s, duration %v, db: %s", event.CommandName, event.CommandFinishedEvent.Duration, event.DatabaseName)
+			slog.WarnContext(ctx, fmt.Sprintf("[SLOW_OPERATION] slow %s, duration %v, db: %s", event.CommandName, event.CommandFinishedEvent.Duration, event.DatabaseName))
 		}
 	},
 }

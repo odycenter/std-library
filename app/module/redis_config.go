@@ -2,10 +2,11 @@ package module
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"log/slog"
 	internal "std-library/app/internal/module"
 	internalredis "std-library/app/internal/redis"
-	"std-library/logs"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func (c *RedisConfig) Initialize(moduleContext *Context, name string) {
 }
 
 func (c *RedisConfig) createRedis() *internalredis.RedisImpl {
-	logs.Info("create redis client, name:%s", c.name)
+	slog.Info(fmt.Sprintf("create redis client, name:%s", c.name))
 	redisImpl := internalredis.New(c.name)
 	redisImpl.Timeout(3 * time.Second)
 	c.moduleContext.StartupHook.Initialize = append(c.moduleContext.StartupHook.Initialize, redisImpl)

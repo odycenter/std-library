@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/robfig/cron/v3"
-	"log"
+	"log/slog"
 	"path/filepath"
 	"sort"
 	internal "std-library/app/internal/module"
@@ -12,7 +12,6 @@ import (
 	"std-library/app/log/consts/logKey"
 	"std-library/app/scheduler"
 	"std-library/app/web/errors"
-	"std-library/logs"
 	reflects "std-library/reflect"
 	"sync"
 	"sync/atomic"
@@ -90,7 +89,7 @@ func (s *SchedulerImpl) add(spec, action string, process func(ctx context.Contex
 	}
 	s.jobInfo[action] = info
 	s.jobs[action] = process
-	log.Println(fmt.Sprintf("Job register successful, ID: %d, name: %v, spec: %v", entryID, action, spec))
+	slog.Info("Job register successful", "ID", entryID, "name", action, "spec", entryID)
 	return scheduler.JobID(entryID), nil
 }
 
@@ -125,7 +124,7 @@ func (s *SchedulerImpl) JobsInfo() []scheduler.JobInfo {
 		result = append(result, entry)
 	}
 
-	log.Println(fmt.Sprintf("Schedule jobs count: %d ", len(result)))
+	slog.Info(fmt.Sprintf("Schedule jobs count: %d ", len(result)))
 	sort.Slice(result, func(i, j int) bool {
 		return result[i].Name < result[j].Name
 	})
@@ -145,16 +144,16 @@ func (s *SchedulerImpl) Execute(_ context.Context) {
 }
 
 func (s *SchedulerImpl) AwaitTermination(ctx context.Context, timeoutInMs int64) {
-	logs.InfoWithCtx(ctx, "shutting down scheduler")
+	slog.InfoContext(ctx, "shutting down scheduler")
 
 	innerCtx, cancel := context.WithTimeout(ctx, time.Duration(timeoutInMs)*time.Millisecond)
 	defer cancel()
 
 	select {
 	case <-innerCtx.Done():
-		logs.InfoWithCtx(innerCtx, "[FAILED_TO_STOP] failed to terminate scheduler, due to timeout, canceledTasks=%d", s.RunningTasks())
+		slog.InfoContext(innerCtx, fmt.Sprintf("[FAILED_TO_STOP] failed to terminate scheduler, due to timeout, canceledTasks=%d", s.RunningTasks()))
 	case <-s.cron.Stop().Done():
-		logs.InfoWithCtx(innerCtx, "all jobs have completed")
+		slog.InfoContext(innerCtx, "all jobs have completed")
 	}
 }
 
@@ -168,7 +167,7 @@ func (s *SchedulerImpl) create(action string, process func(ctx context.Context),
 			_, running := s.runningTasks.LoadOrStore(action, true)
 			if running {
 				info := s.info(id.(scheduler.JobID))
-				logs.Warn("reject job due to disallow Concurrent, %s(id:%v) is still running. previous fire:%v, next fire: %v", action, info.ID, info.Prev, info.Next)
+				slog.Warn(fmt.Sprintf("reject job due to disallow Concurrent, %s(id:%v) is still running. previous fire:%v, next fire: %v", action, info.ID, info.Prev, info.Next))
 				return
 			}
 
@@ -182,7 +181,7 @@ func (s *SchedulerImpl) create(action string, process func(ctx context.Context),
 func create(action string, process func(ctx context.Context), triggerActionId ...string) {
 	actionName := "job:" + action
 	if internal.IsShutdown() {
-		logs.Info("reject job due to server is shutting down!! action: %s", actionName)
+		slog.Info(fmt.Sprintf("reject job due to server is shutting down!! action: %s", actionName))
 		return
 	}
 	actionLog := actionlog.Begin(actionName, "job")

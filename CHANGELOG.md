@@ -1,6 +1,15 @@
 ## Change log
 
-### 1.7.48 (05/30/2024 - 07/29/2024)
+### 1.8.0 (08/07/2024 - 08/14/2024)
+
+* executor: add running/free/waiting metrics support
+* log:
+    - `remove unnecessary level`
+    - `integration with slog`
+    - `dynamic log level change by /_sys/log`
+* remove ipx support
+
+### 1.7.49 (05/30/2024 - 07/31/2024)
 
 * api: /_sys/api to get http api definition, and use sys.api.allowCIDR to restrict access
 * property: multi line supported
@@ -8,34 +17,30 @@
 * redis/mongo: multi config supported
 * redis/cache: pool size supported
 * grpc:
-  - `client retry 5 times when server response error UNAVAILABLE`
-  - `client slow grpc log`
-  - `client support migration option to switch grpc.NewClient for create grpc.ClientConn`
-  - `ReadinessProbe when register client by default`
-  - `maxConnections supported`
-
+    - `client retry 5 times when server response error UNAVAILABLE`
+    - `client slow grpc log`
+    - `client support migration option to switch grpc.NewClient for create grpc.ClientConn`
+    - `ReadinessProbe when register client by default`
+    - `maxConnections supported`
+* mysql: tweak default ConnMaxIdleTime to 30 minutes, ConnMaxLifetime = ConnMaxIdleTime * 2
 
 ### 1.7.28 (05/29/2024 - 05/30/2024)
 
 * mongo: execution elapsed monitor
 
-
 ### 1.7.27 (05/29/2024 - 05/29/2024)
 
 * scheduler: /_sys/job/:name to trigger job
-
 
 ### 1.7.26 (05/23/2024 - 05/28/2024)
 
 * property: /_sys/cache to get cache info
 * scheduler: /_sys/job to get info of all jobs
 
-
 ### 1.7.24 (05/21/2024 - 05/23/2024)
 
 * app: added external dependency checking before start, currently only check kafka and redis/cache to be ready
 * property: /_sys/property to print properties and env var
-
 
 ### 1.7.22 (05/08/2024 - 05/16/2024)
 
@@ -49,26 +54,25 @@
 * ResponseWriter: fix Hijacker type for websocket upgrade
 * property manager: fix LoadProperties issue when values include '='
 
-
 ### 1.7.11 (05/02/2024 - 05/07/2024)
-* mysql: ConnMaxIdletime, default 2 hours 
+
+* mysql: ConnMaxIdletime, default 2 hours
 * mongo: MaxConnIdleTime, default 30 minutes
 * module: redis/cache support
 
-
 ### 1.7.10 (04/01/2024 - 04/29/2024)
 
-* fix kafka producer memory leak issue 
+* fix kafka producer memory leak issue
 * mysql: driver to 1.8.1
 * graceful shutdown: http server, grpc server, scheduler and kafka message listener support graceful shutdown now
 * package change!
-  - `async` to `app/async`
-  - `conf` to `app/conf`
-  - `property` to `app/property`
-  - `scheduler` to `app/scheduler`
-  - `web` to `app/web`
-  - `actionlog` to `app/log`
-  - `grpc` to `app/web/grpc`
+    - `async` to `app/async`
+    - `conf` to `app/conf`
+    - `property` to `app/property`
+    - `scheduler` to `app/scheduler`
+    - `web` to `app/web`
+    - `actionlog` to `app/log`
+    - `grpc` to `app/web/grpc`
 
 ### 1.6.13 (03/21/2024 - 03/28/2024)
 

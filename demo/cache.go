@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/beego/beego/v2/server/web"
+	"log/slog"
 	"net/http"
 	"std-library/app/cache"
 	"std-library/app/module"
-	"std-library/logs"
 	"time"
 )
 
@@ -40,7 +40,7 @@ type getAllHandler struct {
 }
 
 func (h *getAllHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	logs.Info("r: " + r.Method + ":" + r.URL.Path)
+	slog.Info("r: " + r.Method + ":" + r.URL.Path)
 	if r.URL.Path == "/cache-getall" {
 		_ = h.service.GetAll(r.Context(), []string{"key1", "test2"})
 	} else if r.URL.Path == "/cache-get" {

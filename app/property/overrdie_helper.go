@@ -1,8 +1,9 @@
 package property
 
 import (
+	"fmt"
+	"log/slog"
 	"os"
-	"std-library/logs"
 	"strings"
 )
 
@@ -18,7 +19,7 @@ func (o *OverrideHelper) Get(key string) string {
 	envVarName := o.EnvVarName(key)
 	envVarValue := os.Getenv(envVarName)
 	if envVarValue != "" {
-		logs.Warn("found local overridden property by env var %s, key=%s, value=%s", envVarName, key, MaskValue(key, envVarValue))
+		slog.Warn(fmt.Sprintf("found local overridden property by env var %s, key=%s, value=%s", envVarName, key, MaskValue(key, envVarValue)))
 		return envVarValue
 	}
 	return ""

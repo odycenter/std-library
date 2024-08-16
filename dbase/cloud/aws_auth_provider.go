@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/rds/auth"
 	"github.com/go-sql-driver/mysql"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"sync"
@@ -41,24 +41,24 @@ func (a *AWSAuthProvider) DataSourceName() string {
 }
 
 func (a *AWSAuthProvider) dataSourceName(token string) string {
-	log.Println("[AWSAuthProvider] DataSourceName, addr: ", a.DBEndpoint, ", DBName: ", a.DBName)
+	slog.Info("[AWSAuthProvider] DataSourceName", "addr", a.DBEndpoint, "DBName", a.DBName)
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s?allowCleartextPasswords=true&tls=rds&charset=utf8mb4", a.DBUser(), token, a.DBEndpoint, a.DBName)
 }
 
 func (a *AWSAuthProvider) AccessToken() string {
 	start := time.Now()
 	if a.cachedToken != nil && time.Now().Before(a.cachedToken.expiresAt) {
-		log.Println("[AWSAuthProvider] get aws access token from cache, elapse: ", time.Since(start))
+		slog.Info("[AWSAuthProvider] get aws access token from cache", "elapse", time.Since(start))
 		return a.cachedToken.Token
 	}
 
 	if a.Region == "" {
 		region := os.Getenv("RDS_REGION")
 		if region != "" {
-			log.Println("[AWSAuthProvider] region is empty, use ENV[RDS_REGION] region: ", region)
+			slog.Warn("[AWSAuthProvider] region is empty, use ENV[RDS_REGION]", "region", region)
 			a.Region = region
 		} else {
-			log.Println("[AWSAuthProvider] region is empty, use default region ap-northeast-1")
+			slog.Warn("[AWSAuthProvider] region is empty, use default region ap-northeast-1")
 			a.Region = "ap-northeast-1"
 		}
 	}
@@ -71,7 +71,7 @@ func (a *AWSAuthProvider) AccessToken() string {
 		panic("failed to create authentication token: " + err.Error())
 	}
 	elapse := time.Since(start)
-	log.Println("[AWSAuthProvider] get aws access token elapse: ", elapse)
+	slog.Info("[AWSAuthProvider] get aws access token", "elapse", elapse)
 
 	a.cachedToken = &cachedToken{
 		Token:     authenticationToken,

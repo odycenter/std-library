@@ -2,14 +2,15 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"log"
+	"log/slog"
 	"net"
 	app "std-library/app/conf"
-	"std-library/logs"
 	"time"
 )
 
@@ -37,26 +38,26 @@ func (s *Server) Execute(ctx context.Context) {
 	if err != nil {
 		log.Panicf("GRPC service listen failed %s\n", err.Error())
 	}
-	logs.WarnWithCtx(ctx, "grpc server Running on http://%v", s.HttpListen)
+	slog.Warn(fmt.Sprintf("grpc server Running on http://%v", s.HttpListen))
 	go s.Start(listener)
 }
 
 func (s *Server) Shutdown(ctx context.Context) {
-	logs.InfoWithCtx(ctx, "shutting down grpc server")
+	slog.InfoContext(ctx, "shutting down grpc server")
 	s.shutdownInterceptor.shutdownHandler.Shutdown()
 }
 
 func (s *Server) AwaitRequestCompletion(ctx context.Context, timeoutInMs int64) {
 	success := s.shutdownInterceptor.shutdownHandler.AwaitTermination(timeoutInMs)
 	if !success {
-		logs.WarnWithCtx(ctx, "[FAILED_TO_STOP], failed to wait active grpc requests to complete, due to timeout, canceledRequests=%d", s.shutdownInterceptor.shutdownHandler.ActiveRequests())
+		slog.WarnContext(ctx, fmt.Sprintf("[FAILED_TO_STOP], failed to wait active grpc requests to complete, due to timeout, canceledRequests=%d", s.shutdownInterceptor.shutdownHandler.ActiveRequests()))
 	} else {
-		logs.InfoWithCtx(ctx, "active grpc requests completed")
+		slog.InfoContext(ctx, "active grpc requests completed")
 	}
 }
 
 func (s *Server) AwaitTermination(ctx context.Context) {
-	logs.InfoWithCtx(ctx, "shutting down grpc server")
+	slog.InfoContext(ctx, "shutting down grpc server")
 	s.Srv.GracefulStop()
 }
 

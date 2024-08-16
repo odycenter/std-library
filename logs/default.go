@@ -234,38 +234,6 @@ func (dl *DefaultLog) startLogger() {
 	}
 }
 
-// Alert Log ALERT level 日志。
-// Deprecated: Use Log instead
-func (dl *DefaultLog) Alert(format string, v ...any) {
-	if LevelAlert > dl.level {
-		return
-	}
-
-	lm := &Msg{
-		Level: LevelAlert,
-		Msg:   format,
-		When:  time.Now(),
-		Args:  v,
-	}
-	_ = dl.writeMsg(lm)
-}
-
-// Critical Log CRITICAL level 日志。
-// Deprecated: Use Log instead
-func (dl *DefaultLog) Critical(format string, v ...any) {
-	if LevelCritical > dl.level {
-		return
-	}
-	lm := &Msg{
-		Level: LevelCritical,
-		Msg:   format,
-		When:  time.Now(),
-		Args:  v,
-	}
-
-	_ = dl.writeMsg(lm)
-}
-
 // Error Log ERROR level 日志。
 // Deprecated: Use Log instead
 func (dl *DefaultLog) Error(format string, v ...any) {
@@ -474,57 +442,47 @@ func SetLogger(adapter Adapter, opts ...*Option) error {
 	return defaultLogger.SetLogger(adapter, opts...)
 }
 
-// Alert Log ALERT level 日志。
-func Alert(f any, v ...any) {
-	defaultLogger.Log(nil, LevelAlert, f, v...)
-}
-
-// Critical Log CRITICAL level 日志。
-func Critical(f any, v ...any) {
-	defaultLogger.Log(nil, LevelCritical, f, v...)
-}
-
-// Error Log ERROR level 日志。
+// Deprecated: Use slog.Error instead
 func Error(f any, v ...any) {
 	defaultLogger.Log(nil, LevelError, f, v...)
 }
 
-// Warn Log WARN level 日志。
+// Deprecated: Use slog.Warn instead
 func Warn(f any, v ...any) {
 	defaultLogger.Log(nil, LevelWarning, f, v...)
 }
 
-// Notice Log NOTICE level 日志。
+// Deprecated: Use slog.Warn instead
 func Notice(f any, v ...any) {
 	defaultLogger.Log(nil, LevelNotice, f, v...)
 }
 
-// Info Log INFO level 日志。
+// Deprecated: Use slog.Info instead
 func Info(f any, v ...any) {
 	defaultLogger.Log(nil, LevelInformation, f, v...)
 }
 
-// Debug Log DEBUG level 日志。
+// Deprecated: Use slog.Debug instead
 func Debug(f any, v ...any) {
 	defaultLogger.Log(nil, LevelDebug, f, v...)
 }
 
-func TraceWithCtx(ctx context.Context, f any, v ...any) {
-	defaultLogger.Log(ctx, TraceLevel, f, v...)
-}
-
+// Deprecated: Use slog.DebugContext instead
 func DebugWithCtx(ctx context.Context, f any, v ...any) {
 	defaultLogger.Log(ctx, LevelDebug, f, v...)
 }
 
+// Deprecated: Use slog.InfoContext instead
 func InfoWithCtx(ctx context.Context, f any, v ...any) {
 	defaultLogger.Log(ctx, LevelInformation, f, v...)
 }
 
+// Deprecated: Use slog.WarnContext instead
 func WarnWithCtx(ctx context.Context, f any, v ...any) {
 	defaultLogger.Log(ctx, LevelWarning, f, v...)
 }
 
+// Deprecated: Use slog.ErrorContext instead
 func ErrorWithCtx(ctx context.Context, f any, v ...any) {
 	defaultLogger.Log(ctx, LevelError, f, v...)
 }

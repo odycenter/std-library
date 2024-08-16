@@ -3,7 +3,10 @@ package module
 import (
 	"embed"
 	"log"
+	"log/slog"
+	"os"
 	app "std-library/app/conf"
+	applog "std-library/app/log"
 	"std-library/logs"
 	"strings"
 )
@@ -17,6 +20,11 @@ func (m *SystemModule) Initialize() {
 	if m.EnvProperties == nil || len(m.EnvProperties) == 0 {
 		log.Panic("EnvProperties is empty")
 	}
+
+	handler := applog.NewHandler(os.Stdout)
+	handler.SetLevel(slog.LevelDebug)
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
 	m.LoadProperties(m.EnvProperties, "sys.properties")
 	appName := m.RequiredProperty("core.app.name")
 	logs.AppName = appName
@@ -25,6 +33,7 @@ func (m *SystemModule) Initialize() {
 		m.ModuleContext.PropertyManager.EnableLocalPropertyOverride(appName)
 	}
 
+	m.configureLog()
 	m.configureCache()
 	m.configureRedis()
 	m.configureDB()
@@ -34,6 +43,14 @@ func (m *SystemModule) Initialize() {
 	m.configureMetric()
 	m.configureGRPC()
 	m.configureHTTP()
+}
+
+func (m *SystemModule) configureLog() {
+	m.Log().DefaultLevel(m.Property("sys.log.level"))
+	if app.Local() {
+		slog.Info("Setting log level to DEBUG for local environment")
+		m.Log().DefaultLevel(slog.LevelDebug.String())
+	}
 }
 
 func (m *SystemModule) configureHTTP() {

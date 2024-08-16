@@ -4,8 +4,8 @@ package pyroscope
 import (
 	"fmt"
 	"github.com/grafana/pyroscope-go"
+	"log/slog"
 	"runtime"
-	"std-library/logs"
 )
 
 var p *pyroscope.Profiler
@@ -25,7 +25,7 @@ func Start(cfg *Config) {
 		fmt.Println("pyroscope not configuration")
 		return
 	}
-	logs.Info("[pyroscope] start with address: %s", cfg.ServerAddress)
+	slog.Info(fmt.Sprintf("[pyroscope] start with address: %s", cfg.ServerAddress))
 	if cfg.LogLevel == 0 {
 		cfg.LogLevel = LevelDebug
 	}

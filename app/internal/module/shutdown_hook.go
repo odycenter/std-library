@@ -2,11 +2,12 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	actionlog "std-library/app/log"
 	"std-library/app/log/consts/logKey"
-	"std-library/logs"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -98,7 +99,7 @@ func (h *ShutdownHook) Run() {
 
 	shutdownDelayInSec := h.shutdownDelayInSec
 	if shutdownDelayInSec > 0 {
-		logs.Info("delay %v seconds prior to shutdown", shutdownDelayInSec)
+		slog.Info(fmt.Sprintf("delay %v seconds prior to shutdown", shutdownDelayInSec))
 		time.Sleep(time.Duration(shutdownDelayInSec) * time.Second)
 	}
 	atomic.StoreInt32(&afterShutdownDelay, 1) // set afterShutdownDelay to true
@@ -110,7 +111,7 @@ func (h *ShutdownHook) Run() {
 	actionlog.End(actionLog, "ok") // end action log before closing kafka log appender
 
 	h.shutdown(ctx, endTime, STAGE_7, STAGE_8)
-	logs.Info("shutdown completed, elapsed=%v", actionLog.Elapsed())
+	slog.Info(fmt.Sprintf("shutdown completed, elapsed=%v", actionLog.Elapsed()))
 }
 
 func (h *ShutdownHook) shutdown(ctx context.Context, endTime int64, fromStage int, toStage int) {
@@ -119,7 +120,7 @@ func (h *ShutdownHook) shutdown(ctx context.Context, endTime int64, fromStage in
 		if stage == nil {
 			continue
 		}
-		logs.InfoWithCtx(ctx, "shutdown stage: %v", i)
+		slog.InfoContext(ctx, fmt.Sprintf("shutdown stage: %v", i))
 		for _, shutdown := range stage {
 			timeoutInMs := endTime - time.Now().UnixMilli()
 			if timeoutInMs < 1000 {

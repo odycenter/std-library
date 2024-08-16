@@ -8,12 +8,12 @@ import (
 	"github.com/beego/beego/v2/server/web"
 	"io"
 	"log"
+	"log/slog"
 	internal "std-library/app/internal/module"
 	"std-library/app/internal/web"
 	internalHttp "std-library/app/internal/web/http"
 	internalSys "std-library/app/internal/web/sys"
 	"std-library/app/web/beego"
-	"std-library/logs"
 )
 
 type HTTPConfig struct {
@@ -73,33 +73,33 @@ func (c *HTTPConfig) APIContent(envFS *map[string]embed.FS) {
 }
 
 func (c *HTTPConfig) AllowAPI(cidrs []string) {
-	logs.Info("allow /_sys/api access, cidrs=%v", cidrs)
+	slog.Info("allow /_sys/api access", "cidrs", cidrs)
 	c.apiController.AccessControl.Allow = internalHttp.NewIPv4Ranges(cidrs)
 }
 
 func loadAndCompressApiJson(env string, embedFS embed.FS) error {
 	file, err := embedFS.Open("api.json")
 	if err != nil {
-		logs.Warn("api.json not found in env: %s", env)
+		slog.Warn("api.json not found", "env", env)
 		return err
 	}
 	defer file.Close()
 
 	internalSys.ApiJsonContent, err = io.ReadAll(file)
 	if err != nil {
-		logs.Error("Error reading api.json from env: %s: %v", env, err)
+		slog.Error("Error reading api.json", "env", env, "error", err)
 		return err
 	}
 
 	gzippedContent, err := compressContent(internalSys.ApiJsonContent)
 	if err != nil {
-		logs.Error("Error compressing api.json from env: %s: %v", env, err)
+		slog.Error("Error compressing api.json", "env", env, "error", err)
 		return err
 	}
 
 	internalSys.ApiJsonGzipped = gzippedContent
 
-	logs.Info("api.json loaded and compressed successfully from env: %s", env)
+	slog.Info("api.json loaded and compressed successfully", "env", env)
 	return nil
 }
 

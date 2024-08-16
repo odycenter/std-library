@@ -8,19 +8,15 @@ import (
 // 适配器类型，输出方式
 const (
 	AdapterConsole = Adapter("console")
-	AdapterKafka   = Adapter("kafka")
 )
 
 // 日志等级 RFC5424 标准
 const (
-	LevelAlert = LogLevel(iota)
-	LevelCritical
-	LevelError
+	LevelError = LogLevel(iota)
 	LevelWarning
 	LevelNotice
 	LevelInformation
 	LevelDebug
-	TraceLevel
 )
 
 const defaultAsyncMsgLen = 1e3
@@ -36,4 +32,4 @@ var defaultLoggerMap = struct {
 
 var pattern = `{"@timestamp":"%s", "id":%q, "app":"%s", "level":"%s", "file":"%s:%d", "message":%q}`
 var withoutIdPattern = `{"@timestamp":"%s", "app":"%s", "level":"%s", "file":"%s:%d", "message":%q}`
-var levelPrefix = [TraceLevel + 1]string{"[A]", "[C]", "[E]", "[W]", "[N]", "[I]", "[D]", "[T]"}
+var levelPrefix = [LevelDebug + 1]string{"ERROR", "WARN", "[N]", "INFO", "DEBUG"}

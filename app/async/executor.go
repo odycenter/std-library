@@ -3,7 +3,11 @@ package async
 import (
 	"context"
 	"github.com/panjf2000/ants/v2"
-	"std-library/logs"
+	"log"
+	"log/slog"
+	"std-library/app/web/metric"
+	"sync"
+	"time"
 )
 
 type IExecutor interface {
@@ -14,6 +18,9 @@ type IExecutor interface {
 	Waiting() int
 }
 
+var executors sync.Map
+var once sync.Once
+
 type Executor struct {
 	Name string
 	Pool *ants.Pool
@@ -22,13 +29,23 @@ type Executor struct {
 func New(name string, Size int) IExecutor {
 	pool, err := ants.NewPool(Size)
 	if err != nil {
-		logs.Error("NewExecutor ants.NewPool error:", err)
+		slog.Error("NewExecutor ants.NewPool", "error", err)
 		return nil
 	}
-	return &Executor{
+	_, ok := executors.Load(name)
+	if ok {
+		log.Panic("Executor already exists:", name)
+	}
+	executor := &Executor{
 		Name: name,
 		Pool: pool,
 	}
+	executors.Store(name, executor)
+	once.Do(func() {
+		ctx := context.Background()
+		go updateMetrics(ctx)
+	})
+	return executor
 }
 
 func (e *Executor) SubmitTask(ctx *context.Context, action string, task Task) {
@@ -36,7 +53,7 @@ func (e *Executor) SubmitTask(ctx *context.Context, action string, task Task) {
 		execute(ctx, action, task)
 	})
 	if err != nil {
-		logs.Error("Executor Submit error:", err)
+		slog.Error("Executor Submit", "error", err)
 	}
 }
 
@@ -64,4 +81,28 @@ func (e *Executor) Free() int {
 // Waiting returns the number of tasks waiting to be executed.
 func (e *Executor) Waiting() int {
 	return e.Pool.Waiting()
+}
+
+func updateMetrics(ctx context.Context) {
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			collectExecutorMetrics()
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func collectExecutorMetrics() {
+	executors.Range(func(key, value interface{}) bool {
+		executor := value.(*Executor)
+		metric.ExecutorRunning.WithLabelValues(executor.Name).Set(float64(executor.Running()))
+		metric.ExecutorFree.WithLabelValues(executor.Name).Set(float64(executor.Free()))
+		metric.ExecutorWaiting.WithLabelValues(executor.Name).Set(float64(executor.Waiting()))
+		return true
+	})
 }

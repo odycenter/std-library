@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/mohae/deepcopy"
+	"log/slog"
 	"reflect"
 	"std-library/app/cache"
 	actionlog "std-library/app/log"
-	"std-library/logs"
 	reflects "std-library/reflect"
 	"strings"
 	"time"
@@ -64,7 +64,7 @@ func (c *CacheImpl) Get(ctx context.Context, key string, obj interface{}, f func
 		}
 	}()
 
-	logs.DebugWithCtx(ctx, "load value, key=%s", key)
+	slog.DebugContext(ctx, fmt.Sprintf("load value, key=%s", key))
 	o, err = c.load(key, f)
 	if err != nil {
 		return
@@ -89,7 +89,7 @@ func (c *CacheImpl) GetAll(ctx context.Context, keys []string, obj interface{}, 
 		cacheKey := cacheKeys[i]
 		cacheValue := cacheValues[cacheKey]
 		if cacheValue == nil {
-			logs.DebugWithCtx(ctx, "load value, key=%s", key)
+			slog.DebugContext(ctx, fmt.Sprintf("load value, key=%s", key))
 			val, err := c.load(key, f)
 			if err != nil {
 				return nil, err
@@ -129,7 +129,7 @@ func (c *CacheImpl) load(key string, f func(key string) (interface{}, error)) (i
 func (c *CacheImpl) Put(ctx context.Context, key string, obj interface{}) bool {
 	err := c.checkType(obj)
 	if err != nil {
-		logs.ErrorWithCtx(ctx, "key: %s, error: %s", key, err.Error())
+		slog.ErrorContext(ctx, fmt.Sprintf("key: %s, error: %s", key, err.Error()))
 		return false
 	}
 
@@ -143,7 +143,7 @@ func (c *CacheImpl) PutAll(ctx context.Context, values map[string]any) bool {
 	for key, value := range values {
 		err := c.checkType(value)
 		if err != nil {
-			logs.ErrorWithCtx(ctx, "key: %s, error: %s", key, err.Error())
+			slog.ErrorContext(ctx, fmt.Sprintf("key: %s, error: %s", key, err.Error()))
 			return false
 		}
 		cacheValues[c.cacheKey(key)] = value

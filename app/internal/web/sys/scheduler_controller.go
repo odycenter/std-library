@@ -1,13 +1,14 @@
 package internal_sys
 
 import (
+	"fmt"
+	"log/slog"
 	"net/http"
 	"std-library/app/internal/scheduler"
 	"std-library/app/internal/web/http"
 	actionlog "std-library/app/log"
 	"std-library/app/web/errors"
 	"std-library/json"
-	"std-library/logs"
 	"std-library/nets"
 	"strings"
 )
@@ -48,7 +49,7 @@ func (c *SchedulerController) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	job := parts[0]
 	ctx := r.Context()
-	logs.WarnWithCtx(ctx, "[MANUAL_OPERATION] trigger job manually, job=%s", job)
+	slog.WarnContext(ctx, fmt.Sprintf("[MANUAL_OPERATION] trigger job manually, job=%s", job))
 	actionlog.Context(&ctx, "manual_operation", true)
 	id := actionlog.GetId(&ctx)
 	c.scheduler.TriggerNow(job, id)

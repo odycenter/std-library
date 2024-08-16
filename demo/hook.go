@@ -2,22 +2,22 @@ package demo
 
 import (
 	"context"
+	"log/slog"
 	"std-library/app/module"
-	"std-library/logs"
 )
 
 type OnStartupTask struct {
 }
 
 func (t OnStartupTask) Execute(ctx context.Context) {
-	logs.InfoWithCtx(ctx, "call on startup")
+	slog.InfoContext(ctx, "call on startup")
 }
 
 type OnShutdownTask struct {
 }
 
 func (t OnShutdownTask) Execute(ctx context.Context) {
-	logs.InfoWithCtx(ctx, "call on Shutdown")
+	slog.InfoContext(ctx, "call on Shutdown")
 }
 
 type HookModule struct {

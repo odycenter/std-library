@@ -11,8 +11,6 @@ func TestDefault(t *testing.T) {
 		LogLevel: logs.LevelDebug,
 	})
 	logs.SetLogFuncCallDepth(3)
-	logs.Alert("alert", "Ex", "Ex")
 	logs.Error("error", "Ex", "Ex")
-	logs.Notice("notice", "Ex", "Ex")
 	logs.Debug("debug", "Ex", "Ex")
 }

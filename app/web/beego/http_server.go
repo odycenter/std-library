@@ -2,10 +2,11 @@ package beego
 
 import (
 	"context"
+	"fmt"
 	beegoWeb "github.com/beego/beego/v2/server/web"
+	"log/slog"
 	internalweb "std-library/app/internal/web"
 	"std-library/app/web"
-	"std-library/logs"
 	"time"
 )
 
@@ -50,7 +51,7 @@ func (s *HTTPServer) CustomErrorResponseMessage(f func(code int, message string)
 }
 
 func (s *HTTPServer) Execute(ctx context.Context) {
-	logs.WarnWithCtx(ctx, "web server Running on http://%v", s.HttpHost.String())
+	slog.Warn(fmt.Sprintf("web server Running on http://%v", s.HttpHost.String()))
 	go s.Start()
 }
 
@@ -59,21 +60,21 @@ func (s *HTTPServer) Start() {
 }
 
 func (s *HTTPServer) Shutdown(ctx context.Context) {
-	logs.InfoWithCtx(ctx, "shutting down web server")
+	slog.InfoContext(ctx, "shutting down web server")
 	s.shutdownHandler.Shutdown()
 }
 
 func (s *HTTPServer) AwaitRequestCompletion(ctx context.Context, timeoutInMs int64) {
 	success := s.shutdownHandler.AwaitTermination(timeoutInMs)
 	if !success {
-		logs.WarnWithCtx(ctx, "[FAILED_TO_STOP], failed to wait active http requests to complete, due to timeout, canceledRequests=%d", s.shutdownHandler.ActiveRequests())
+		slog.Warn(fmt.Sprintf("[FAILED_TO_STOP], failed to wait active http requests to complete, due to timeout, canceledRequests=%d", s.shutdownHandler.ActiveRequests()))
 	} else {
-		logs.InfoWithCtx(ctx, "active web requests completed")
+		slog.InfoContext(ctx, "active web requests completed")
 	}
 }
 
 func (s *HTTPServer) AwaitTermination(ctx context.Context) {
-	logs.InfoWithCtx(ctx, "shutting down http server")
+	slog.InfoContext(ctx, "shutting down http server")
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
 	s.server.Server.Shutdown(ctx)

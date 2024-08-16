@@ -3,9 +3,10 @@ package kafka
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/segmentio/kafka-go"
+	"log/slog"
 	internal "std-library/app/internal/module"
-	"std-library/logs"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -40,7 +41,7 @@ func (m *MessageListener) Initialize(opt *SubscribeOption) {
 func (m *MessageListener) Start(ctx context.Context) {
 	for i := 0; i < m.poolSize; i++ {
 		clientId := ClientID()
-		logs.InfoWithCtx(ctx, "[message-listener] start message listener, groupId: %s, topic: %s, clientID: %s", m.Opt.GroupId, m.topic, clientId)
+		slog.InfoContext(ctx, fmt.Sprintf("[message-listener] start message listener, groupId: %s, topic: %s, clientID: %s", m.Opt.GroupId, m.topic, clientId))
 		go m.Run(clientId)
 	}
 }
@@ -53,11 +54,11 @@ func (m *MessageListener) Run(clientId string) {
 	for {
 		select {
 		case <-m.ctx.Done():
-			logs.Warn("[message-listener] ctx.Done by caller. groupId: %s, topic: %s, clientID: %s", m.Opt.GroupId, m.topic, clientId)
+			slog.Warn(fmt.Sprintf("[message-listener] ctx.Done by caller. groupId: %s, topic: %s, clientID: %s", m.Opt.GroupId, m.topic, clientId))
 			return
 		default:
 			if internal.IsShutdown() {
-				logs.Info("[message-listener] reject kafka handle process due to server is shutting down!! GroupId: %s, topic: %s, clientId: %s", m.Opt.GroupId, m.topic, clientId)
+				slog.Info(fmt.Sprintf("[message-listener] reject kafka handle process due to server is shutting down!! GroupId: %s, topic: %s, clientId: %s", m.Opt.GroupId, m.topic, clientId))
 				return
 			}
 			m.run(clientId, reader)
@@ -77,14 +78,14 @@ func (m *MessageListener) run(clientId string, reader *kafka.Reader) {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return
 		}
-		logs.Error("[message-listener] FetchMessage fail, groupId: %s, topic: %s, clientId: %s, error:", m.Opt.GroupId, m.topic, clientId, err)
+		slog.Error(fmt.Sprintf("[message-listener] FetchMessage fail, groupId: %s, topic: %s, clientId: %s, error: %v", m.Opt.GroupId, m.topic, clientId, err))
 		return
 	}
 
 	id := Handle(clientId, m.Opt.GroupId, msg, m.Handler.Handle)
 	err = reader.CommitMessages(context.Background(), msg)
 	if err != nil {
-		logs.Error("[message-listener] CommitMessages fail, groupId: %s, topic: %s, clientId: %s, id: %v, error: ", m.Opt.GroupId, m.topic, clientId, id, err)
+		slog.Error(fmt.Sprintf("[message-listener] CommitMessages fail, groupId: %s, topic: %s, clientId: %s, id: %v, error: %v", m.Opt.GroupId, m.topic, clientId, id, err))
 	}
 }
 
@@ -93,7 +94,7 @@ func (m *MessageListener) RunningTasks() int {
 }
 
 func (m *MessageListener) AwaitTermination(ctx context.Context, timeoutInMs int64) {
-	logs.InfoWithCtx(ctx, "shutting down message listener. groupId: %s, topic: %s", m.Opt.GroupId, m.topic)
+	slog.InfoContext(ctx, fmt.Sprintf("shutting down message listener. groupId: %s, topic: %s", m.Opt.GroupId, m.topic))
 
 	innerCtx, cancel := context.WithTimeout(ctx, time.Duration(timeoutInMs)*time.Millisecond)
 	defer cancel()
@@ -101,7 +102,7 @@ func (m *MessageListener) AwaitTermination(ctx context.Context, timeoutInMs int6
 	for {
 		select {
 		case <-innerCtx.Done():
-			logs.InfoWithCtx(innerCtx, "[FAILED_TO_STOP] failed to terminate message listener, due to timeout, groupId: %s, topic: %s, canceledTasks=%d", m.Opt.GroupId, m.topic, m.RunningTasks())
+			slog.InfoContext(innerCtx, fmt.Sprintf("[FAILED_TO_STOP] failed to terminate message listener, due to timeout, groupId: %s, topic: %s, canceledTasks=%d", m.Opt.GroupId, m.topic, m.RunningTasks()))
 			m.cancel()
 			for _, reader := range m.reader {
 				go reader.Close()
@@ -109,7 +110,7 @@ func (m *MessageListener) AwaitTermination(ctx context.Context, timeoutInMs int6
 			return
 		default:
 			if m.RunningTasks() == 0 {
-				logs.InfoWithCtx(innerCtx, "all message handler have completed, groupId: %s, topic: %s", m.Opt.GroupId, m.topic)
+				slog.InfoContext(innerCtx, fmt.Sprintf("all message handler have completed, groupId: %s, topic: %s", m.Opt.GroupId, m.topic))
 				return
 			}
 			time.Sleep(100 * time.Millisecond)

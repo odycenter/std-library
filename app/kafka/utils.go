@@ -2,13 +2,14 @@ package kafka
 
 import (
 	"context"
+	"fmt"
 	"github.com/segmentio/kafka-go"
+	"log/slog"
 	"os"
 	app "std-library/app/conf"
 	actionlog "std-library/app/log"
 	"std-library/app/log/consts/logKey"
 	"std-library/app/log/dto"
-	"std-library/logs"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -58,7 +59,7 @@ func CheckConsumerDelay(ctx context.Context, record kafka.Message, actionLog dto
 	}
 	consumerDelay := time.Since(record.Time)
 	actionLog.PutContext("consumer_delay", consumerDelay.Nanoseconds())
-	logs.DebugWithCtx(ctx, "[message] consumer_delay: %v", consumerDelay.String())
+	slog.DebugContext(ctx, fmt.Sprintf("[message] consumer_delay: %v", consumerDelay.String()))
 }
 
 func Handle(clientId, groupId string, record kafka.Message, process func(ctx context.Context, key string, data []byte)) (id string) {
@@ -111,7 +112,7 @@ func Handle(clientId, groupId string, record kafka.Message, process func(ctx con
 	ctx = context.WithValue(ctx, logKey.Id, id)
 	ctx = context.WithValue(ctx, logKey.Action, actionLog.Action)
 	actionLog.RequestBody = string(record.Value)
-	logs.DebugWithCtx(ctx, "[message] topic: %v, key: %v, message: %v, time: %v, refId: %v, client: %v", topic, string(record.Key), actionLog.RequestBody, record.Time, refId, client)
+	slog.DebugContext(ctx, fmt.Sprintf("[message] topic: %v, key: %v, message: %v, time: %v, refId: %v, client: %v", topic, string(record.Key), actionLog.RequestBody, record.Time, refId, client))
 
 	CheckConsumerDelay(ctx, record, actionLog)
 

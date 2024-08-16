@@ -3,10 +3,11 @@ package internal_redis
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/redis/go-redis/v9"
 	"log"
+	"log/slog"
 	app "std-library/app/conf"
-	"std-library/logs"
 	redismigration "std-library/redis"
 	"time"
 )
@@ -34,7 +35,7 @@ func (r *RedisImpl) Execute(_ context.Context) {
 		return
 	}
 
-	logs.Debug("redis Initialize, name=%s", r.name)
+	slog.Debug(fmt.Sprintf("redis Initialize, name=%s", r.name))
 	r.Initialize()
 
 	if r.name == "redis" {
@@ -106,10 +107,10 @@ func (r *RedisImpl) Client() redis.UniversalClient {
 }
 
 func (r *RedisImpl) Close() {
-	logs.Info("close redis client, name=%s, host=%s", r.name, r.host)
+	slog.Info(fmt.Sprintf("close redis client, name=%s, host=%s", r.name, r.host))
 	err := r.client.Close()
 	if err != nil {
-		logs.Error("close redis client error, name=%s, host=%s, err=%v", r.name, r.host, err)
+		slog.Error("close redis client", "name", r.name, "host", r.host, "err", err)
 	}
 }
 

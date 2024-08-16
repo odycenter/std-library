@@ -2,16 +2,16 @@ package demo
 
 import (
 	"context"
+	"log/slog"
 	actionlog "std-library/app/log"
 	"std-library/app/module"
-	"std-library/logs"
 )
 
 type messageHandler struct {
 }
 
 func (h *messageHandler) Handle(ctx context.Context, key string, data []byte) {
-	logs.Info("key: " + key + ", data: " + string(data))
+	slog.Info("key: " + key + ", data: " + string(data))
 	//time.Sleep(10 * time.Second)
 	actionlog.Context(&ctx, "test", "test123")
 	actionlog.Context(&ctx, "test", "test123556666")

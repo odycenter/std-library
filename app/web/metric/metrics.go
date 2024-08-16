@@ -2,13 +2,14 @@ package metric
 
 import (
 	"context"
+	"fmt"
 	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
+	"log/slog"
 	"net/http"
 	internalweb "std-library/app/internal/web"
 	internal_http "std-library/app/internal/web/http"
-	"std-library/logs"
 )
 
 type Server struct {
@@ -22,7 +23,7 @@ func (p *Server) Start(ctx context.Context) {
 	}
 	err := p.server.ListenAndServe()
 	if err != nil {
-		logs.ErrorWithCtx(ctx, "Failed to start monitor server %v", err)
+		slog.ErrorContext(ctx, fmt.Sprintf("Failed to start monitor server %v", err))
 	}
 }
 
@@ -42,6 +43,6 @@ func (p *Server) Execute(ctx context.Context) {
 		accessControl: &internal_http.IPv4AccessControl{},
 	}
 	http.Handle(MetricsPath, accessHandler.Handler(promhttp.Handler()))
-	logs.WarnWithCtx(ctx, "monitor server Running on http://%s", p.HttpHost.String())
+	slog.Warn(fmt.Sprintf("monitor server Running on http://%s", p.HttpHost.String()))
 	go p.Start(ctx)
 }

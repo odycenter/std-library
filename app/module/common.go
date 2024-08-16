@@ -3,12 +3,13 @@ package module
 import (
 	"context"
 	"embed"
+	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"std-library/app/async"
 	app "std-library/app/conf"
 	internal "std-library/app/internal/module"
-	"std-library/logs"
 )
 
 type Common struct {
@@ -37,7 +38,7 @@ func (c *Common) OnShutdown(task async.Task) {
 
 func (c *Common) LoadProperties(envFS map[string]embed.FS, propertiesFileName string) {
 	c.Env = app.Env()
-	logs.Info("loadProperties by env: %s, propertiesFileName: %s", c.Env, propertiesFileName)
+	slog.Info(fmt.Sprintf("loadProperties by env: %s, propertiesFileName: %s", c.Env, propertiesFileName))
 	files, ok := envFS[c.Env]
 	if !ok {
 		log.Fatal("loadProperties error! Invalid environment: " + c.Env)
@@ -54,7 +55,7 @@ func (c *Common) LoadPropertiesByFS(properties embed.FS, propertyFile string, de
 	f, err := properties.Open(propertyFile)
 	if err != nil {
 		if os.IsNotExist(err) {
-			logs.Warn("propertyFile not found!  load default properties, env: %v, fileName: %s ", app.Env(), propertyFile)
+			slog.Warn(fmt.Sprintf("propertyFile not found!  load default properties, env: %v, fileName: %s ", app.Env(), propertyFile))
 			f, err = defaultFS.Open(propertyFile)
 		}
 
@@ -112,6 +113,10 @@ func (c *Common) Mongo(name ...string) *MongoConfig {
 
 func (c *Common) Metric() *MetricConfig {
 	return c.ModuleContext.Config("metric", func() Config { return &MetricConfig{} }).(*MetricConfig)
+}
+
+func (c *Common) Log() *LogConfig {
+	return c.ModuleContext.Config("log", func() Config { return &LogConfig{} }).(*LogConfig)
 }
 
 func configName(prefix string, name ...string) string {

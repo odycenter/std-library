@@ -1,15 +1,17 @@
 package demo_test
 
 import (
+	"context"
 	"github.com/beego/beego/v2/server/web"
 	"google.golang.org/grpc"
+	"log/slog"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"std-library/app/async"
 	"std-library/app/module"
 	"std-library/demo"
 	"std-library/demo/test"
-	"std-library/logs"
 	"std-library/mongo"
 	"std-library/redis"
 	"testing"
@@ -20,7 +22,7 @@ import (
 	"embed"
 )
 
-//go:embed sys.properties
+//go:embed sys.properties api.json
 var Conf embed.FS
 
 func TestAppStart(t *testing.T) {
@@ -45,7 +47,7 @@ func (a *CoreApp) Initialize() {
 	if err != nil {
 		panic(err)
 	}
-	logs.Info(result.InsertedID)
+	slog.Info("after insert", "id", result.InsertedID)
 
 	readOnly := a.Redis("read-only")
 	readOnly.Host(a.RequiredProperty("sys.redis.readonly.host"))
@@ -54,10 +56,14 @@ func (a *CoreApp) Initialize() {
 	a.Redis().ForceEarlyStart() // use ForceEarlyStart to aquire redis instance before startup stage
 	redis.RDB().Del("app_test.cachetest:rwww")
 	// a.Pyroscope().ForceLocalStart()
+	aa := async.New("test", 10)
+	aa.Submit(nil, "test", func(ctx context.Context) {
+		slog.InfoContext(ctx, "test:%s", "player", "asa")
+	})
 
 	a.Load(&demo.HookModule{})
-	//a.Load(&demo.KafkaModule{})
-	//a.Load(&demo.ScheduleModule{})
+	// a.Load(&demo.KafkaModule{})
+	a.Load(&demo.ScheduleModule{})
 	a.Load(&demo.CacheModule{})
 	a.Metric().Listen("8001")
 	a.Grpc().MaxConnections(1)
@@ -73,6 +79,6 @@ type sleep50SHandler struct {
 }
 
 func (h *sleep50SHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	logs.Info("r: " + r.Method + ":" + r.URL.Path)
-	time.Sleep(50 * time.Second)
+	slog.Info("r: " + r.Method + ":" + r.URL.Path)
+	time.Sleep(10 * time.Second)
 }

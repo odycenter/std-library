@@ -2,15 +2,16 @@ package module
 
 import (
 	"context"
+	"fmt"
 	"github.com/beego/beego/v2/server/web"
 	"log"
+	"log/slog"
 	"reflect"
 	"std-library/app/cache"
 	internalcache "std-library/app/internal/cache"
 	internal "std-library/app/internal/module"
 	internalredis "std-library/app/internal/redis"
 	"std-library/app/internal/web/sys"
-	"std-library/logs"
 	reflects "std-library/reflect"
 	"strings"
 	"sync"
@@ -81,7 +82,7 @@ func (c *CacheConfig) Add(obj interface{}, expiration time.Duration) cache.Cache
 
 	typeName := reflects.StructFullName(obj)
 	name := strings.ToLower(typeName)
-	logs.Info("add cache, struct=%s, expiration=%v", typeName, expiration)
+	slog.Info(fmt.Sprintf("add cache, struct=%s, expiration=%v", typeName, expiration))
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -111,7 +112,7 @@ func (c *CacheConfig) MaxLocalSize(size int) {
 }
 
 func (c *CacheConfig) configureRedis(host string, password ...string) {
-	logs.Info("create redis cache store, host=%v", host)
+	slog.Info(fmt.Sprintf("create redis cache store, host=%v", host))
 	redisImpl := internalredis.New("redis-cache")
 	hostname := internal.Hostname(host)
 	internal.ResolveHost(context.Background(), hostname)
@@ -134,7 +135,7 @@ func (c *CacheConfig) configureRedis(host string, password ...string) {
 
 func (c *CacheConfig) configureLocalCacheStore() {
 	if c.localCacheStore == nil {
-		logs.Info("create local cache store")
+		slog.Info("create local cache store")
 		c.localCacheStore = &internalcache.LocalCacheStore{}
 		// TODO cleanup local cache store
 		// c.localCacheStore.Cleanup()

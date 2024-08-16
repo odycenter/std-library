@@ -2,10 +2,10 @@ package internal_sys
 
 import (
 	"embed"
+	"log/slog"
 	"net/http"
 	"std-library/app/internal/web/http"
 	"std-library/app/web/errors"
-	"std-library/logs"
 	"std-library/nets"
 	"strings"
 	"sync"
@@ -28,7 +28,7 @@ func NewAPIController() *APIController {
 		if err == nil {
 			htmlContent = content
 		} else {
-			logs.Error("failed to read api.html")
+			slog.Error("failed to read api.html")
 		}
 	})
 	return &APIController{
