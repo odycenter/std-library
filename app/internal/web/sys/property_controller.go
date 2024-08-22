@@ -7,6 +7,7 @@ import (
 	"std-library/app/property"
 	"std-library/app/web/errors"
 	"std-library/nets"
+	"strconv"
 	"strings"
 )
 
@@ -38,6 +39,12 @@ func (c *PropertyController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (c *PropertyController) propertiesString() string {
 	var sb strings.Builder
+	if c.propertyManager.DefaultHTTPPort > 0 {
+		sb.WriteString("# No http listen port configured, using port to start HTTP server\n")
+		sb.WriteString("http.port=")
+		sb.WriteString(strconv.Itoa(c.propertyManager.DefaultHTTPPort) + " (can not override by ENV)\n")
+		sb.WriteString("\n")
+	}
 	sb.WriteString("# properties\n")
 	for _, key := range c.propertyManager.GetKeysInOrder() {
 		sb.WriteString(key)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	internalLog "std-library/app/internal/log"
 	"std-library/app/internal/web/http"
 	"std-library/app/log"
 	"std-library/app/web/errors"
@@ -21,14 +22,14 @@ var (
 
 type LogController struct {
 	accessControl  *internal_http.IPv4AccessControl
-	handler        *log.Handler
+	handler        *internalLog.Handler
 	changeTime     time.Time
 	resetTimer     *time.Timer
 	manualDuration time.Duration
 	mutex          sync.Mutex
 }
 
-func NewLogController(logHandler *log.Handler) *LogController {
+func NewLogController(logHandler *internalLog.Handler) *LogController {
 	return &LogController{
 		accessControl: &internal_http.IPv4AccessControl{},
 		handler:       logHandler,
@@ -67,7 +68,7 @@ func (c *LogController) handleGet(w http.ResponseWriter) {
 
 	result := map[string]interface{}{
 		"current_level": c.handler.Level(),
-		"default_level": c.handler.DefaultLevel().(slog.Level),
+		"default_level": c.handler.DefaultLevel(),
 	}
 
 	if c.resetTimer != nil {
@@ -89,20 +90,23 @@ func (c *LogController) handlePut(w http.ResponseWriter, r *http.Request, parts 
 		errors.BadRequest("invalid log level, level is empty")
 	}
 
-	level := log.ToLevel(levelStr)
-	if level == c.handler.Level() {
-		errors.BadRequest("invalid log level, level not changed")
+	level, ok := internalLog.LevelMap[strings.ToLower(levelStr)]
+	if !ok {
+		errors.BadRequest("invalid log level, level:" + levelStr)
 	}
-
 	duration := defaultManualLevelDuration
-	if len(parts) == 2 {
-		var err error
-		duration, err = time.ParseDuration(parts[1])
-		if err != nil {
-			errors.BadRequest("invalid duration format")
-		}
-		if duration > maxManualLevelDuration {
-			duration = maxManualLevelDuration
+	if level == c.handler.DefaultLevel() {
+		duration = 0 // immediately reset to default level
+	} else {
+		if len(parts) == 2 {
+			var err error
+			duration, err = time.ParseDuration(parts[1])
+			if err != nil {
+				errors.BadRequest("invalid duration format")
+			}
+			if duration > maxManualLevelDuration {
+				duration = maxManualLevelDuration
+			}
 		}
 	}
 
@@ -138,10 +142,7 @@ func (c *LogController) resetToDefaultLevel() {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	defaultLevel, ok := c.handler.DefaultLevel().(slog.Level)
-	if !ok {
-		defaultLevel = slog.LevelInfo
-	}
+	defaultLevel := c.handler.DefaultLevel()
 
 	c.handler.SetLevel(defaultLevel)
 	c.resetTimer = nil

@@ -1,4 +1,4 @@
-package log
+package internal_log
 
 import (
 	"context"
@@ -13,6 +13,12 @@ import (
 
 var loggerLevel atomic.Value
 var defaultLevel atomic.Value
+var LevelMap = map[string]slog.Level{
+	"debug": slog.LevelDebug,
+	"info":  slog.LevelInfo,
+	"warn":  slog.LevelWarn,
+	"error": slog.LevelError,
+}
 
 type Handler struct {
 	*slog.JSONHandler
@@ -26,7 +32,7 @@ func NewHandler(w io.Writer) *Handler {
 		Level:     handler,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			switch a.Key {
-			case logKey.Id, "app", slog.LevelKey, "function", "file", "line":
+			case logKey.Id, "app", slog.LevelKey, "function", "file", "line", "elapsed":
 				return a
 			case slog.TimeKey:
 				return slog.Attr{Key: "@timestamp", Value: a.Value}
@@ -38,8 +44,12 @@ func NewHandler(w io.Writer) *Handler {
 					return slog.Attr{Key: a.Key, Value: slog.AnyValue(source)}
 				}
 			default:
+				value := a.Value
+				if IsMaskedField(a.Key) {
+					value = slog.StringValue("******")
+				}
 				if !strings.HasPrefix(a.Key, "context.") {
-					return slog.Attr{Key: "context." + a.Key, Value: a.Value}
+					return slog.Attr{Key: "context." + a.Key, Value: value}
 				}
 			}
 			return a
@@ -57,8 +67,8 @@ func (h *Handler) SetDefaultLevel(levelStr string) {
 	h.SetLevel(level)
 }
 
-func (h *Handler) DefaultLevel() interface{} {
-	return defaultLevel.Load()
+func (h *Handler) DefaultLevel() slog.Level {
+	return defaultLevel.Load().(slog.Level)
 }
 
 func (h *Handler) SetLevel(level slog.Level) {
@@ -110,17 +120,9 @@ func (h *Handler) WithGroup(name string) slog.Handler {
 }
 
 func ToLevel(level string) slog.Level {
-	switch strings.ToLower(level) {
-	case "debug":
-		return slog.LevelDebug
-	case "info":
-		return slog.LevelInfo
-	case "warn":
-		return slog.LevelWarn
-	case "error":
-		return slog.LevelError
+	if l, ok := LevelMap[strings.ToLower(level)]; ok {
+		return l
 	}
-
 	slog.Warn("Invalid log level, return default INFO level", "level", level)
 	return slog.LevelInfo
 }

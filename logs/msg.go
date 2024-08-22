@@ -30,8 +30,8 @@ func (m *Msg) Format() string {
 	var level = levelPrefix[m.Level]
 
 	if m.ID == "" {
-		return fmt.Sprintf(withoutIdPattern, m.When.Format(time.RFC3339), AppName, level, f, m.LineNumber, msg)
+		return fmt.Sprintf(withoutIdPattern, m.When.Format(time.RFC3339Nano), AppName, level, f, m.LineNumber, msg)
 	}
 
-	return fmt.Sprintf(pattern, m.When.Format(time.RFC3339), m.ID, AppName, level, f, m.LineNumber, msg)
+	return fmt.Sprintf(pattern, m.When.Format(time.RFC3339Nano), m.ID, AppName, level, f, m.LineNumber, msg)
 }

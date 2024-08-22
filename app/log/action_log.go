@@ -5,28 +5,14 @@ import (
 	"encoding/json"
 	"reflect"
 	"runtime/debug"
+	internallog "std-library/app/internal/log"
 	"std-library/app/log/consts/logKey"
 	"std-library/app/log/dto"
 	"std-library/app/web/errors"
 )
 
-var maskedFields = []string{
-	"Token", "PayPassword", "PrivatePassword", "Password", "NewPassword", "OldPassword", "ConfirmPassword", // password related
-	"PlayerPassword", "password", "AppPassword", "NewPwd", // password related
-	"AlipayAccount", "AlipayName", "IdNum", "BankCardNum", "BankPhone", "BankRealName", "CardNumber", // bank card related
-	"DigitalAddress",                                                                                                       // digital address related
-	"BindPhone", "BindPhoneEncrypt", "BindQQ", "BindQqEncrypt", "BindWechat", "BindWechatEncrypt", "Email", "EmailEncrypt", // personal related
-	"RealName", "RealNameEncrypt", // personal related
-}
-
 func AddMaskedField(fieldName ...string) {
-	maskedFields = append(maskedFields, fieldName...)
-}
-
-func MaskedFields() []string {
-	fields := make([]string, len(maskedFields))
-	copy(fields, maskedFields)
-	return fields
+	internallog.AddMaskedField(fieldName...)
 }
 
 func Begin(action string, actionType string) dto.ActionLog {
@@ -39,11 +25,7 @@ func End(actionLog dto.ActionLog, result ...string) {
 	if result != nil && len(result) > 0 && result[0] != "" {
 		actionLog.Result(result[0])
 	}
-	actionLog.End().Output(maskedFields)
-}
-
-func Output(actionLog dto.ActionLog) {
-	actionLog.Output(maskedFields)
+	actionLog.End().Output()
 }
 
 func HandleRecover(r interface{}, actionLog dto.ActionLog, contextMap map[string][]any) {
@@ -76,7 +58,11 @@ func Context(ctx *context.Context, key string, value any) {
 	if !ok {
 		v = make([]any, 0)
 	}
-	v = append(v, value)
+	if internallog.IsMaskedField(key) {
+		v = append(v, "******")
+	} else {
+		v = append(v, value)
+	}
 	contextMap[key] = v
 	*ctx = context.WithValue(*ctx, logKey.Context, contextMap)
 }

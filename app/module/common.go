@@ -10,6 +10,7 @@ import (
 	"std-library/app/async"
 	app "std-library/app/conf"
 	internal "std-library/app/internal/module"
+	"time"
 )
 
 type Common struct {
@@ -18,8 +19,11 @@ type Common struct {
 }
 
 func (c *Common) Load(module Module) {
+	start := time.Now()
 	module.SetContext(c.ModuleContext)
 	module.Initialize()
+	elapsed := time.Since(start)
+	slog.Info(fmt.Sprintf("Module %T loaded", module), "elapsed", elapsed.Nanoseconds())
 }
 
 func (c *Common) SetContext(moduleContext *Context) {
@@ -109,6 +113,14 @@ func (c *Common) Pyroscope() *PyroscopeConfig {
 
 func (c *Common) Mongo(name ...string) *MongoConfig {
 	return c.ModuleContext.Config(configName("mongo", name...), func() Config { return &MongoConfig{} }).(*MongoConfig)
+}
+
+func (c *Common) DB(name ...string) *DBConfig {
+	var cname string
+	if len(name) > 0 && name[0] != "" {
+		cname = name[0]
+	}
+	return c.ModuleContext.ConfigByType("db", cname, func() Config { return &DBConfig{} }).(*DBConfig)
 }
 
 func (c *Common) Metric() *MetricConfig {

@@ -89,7 +89,7 @@ func (s *SchedulerImpl) add(spec, action string, process func(ctx context.Contex
 	}
 	s.jobInfo[action] = info
 	s.jobs[action] = process
-	slog.Info("Job register successful", "ID", entryID, "name", action, "spec", entryID)
+	slog.Info(fmt.Sprintf("Job register successful, ID: %d, name: %v, spec: %v", entryID, action, spec))
 	return scheduler.JobID(entryID), nil
 }
 

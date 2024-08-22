@@ -10,6 +10,7 @@ import (
 	"os"
 	"std-library/app/async"
 	"std-library/app/module"
+	"std-library/dbase"
 	"std-library/demo"
 	"std-library/demo/test"
 	"std-library/mongo"
@@ -41,6 +42,20 @@ func (a *CoreApp) Initialize() {
 		"": Conf,
 	}
 	a.Load(&module.SystemModule{EnvProperties: envProperties})
+	a.Log().MaskedFields("Password")
+	a.DB().ForceEarlyStart()
+	var data time.Time
+	e := dbase.Orm().Raw("select now() from dual;").QueryRow(&data)
+	slog.Info("orm", "result", data, "err", e)
+
+	a.DB("default@tidb").
+		Url("@tcp(10.15.39.64:4000)/cloud").
+		User("dev-tidb-rd-use").
+		Password("wpI7ENNysS").
+		ForceEarlyStart()
+	e = dbase.Orm("default@tidb").Raw("select now() from dual;").QueryRow(&data)
+	slog.Info("orm", "result", data, "err", e)
+
 	a.Mongo().SlowOperationThreshold(40 * time.Millisecond)
 	a.Mongo().ForceEarlyStart()
 	result, err := mongo.DB().InsertOne("test", "InsertTest", map[string]interface{}{"name": "name"})

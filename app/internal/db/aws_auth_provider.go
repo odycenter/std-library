@@ -1,17 +1,16 @@
-package cloud
+package internal_db
 
 import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/rds/auth"
 	"github.com/go-sql-driver/mysql"
 	"io"
+	"log"
 	"log/slog"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 )
@@ -22,27 +21,18 @@ type cachedToken struct {
 }
 
 type AWSAuthProvider struct {
-	Region      string
+	User        string
 	DBEndpoint  string
-	DBName      string
+	Region      string
 	cachedToken *cachedToken
 }
 
-var once sync.Once
+var certsOnce sync.Once
 
-func (a *AWSAuthProvider) Register() {
-	once.Do(func() {
+func RegisterCerts() {
+	certsOnce.Do(func() {
 		RegisterRDSMysqlCerts()
 	})
-}
-
-func (a *AWSAuthProvider) DataSourceName() string {
-	return a.dataSourceName("emptyToken")
-}
-
-func (a *AWSAuthProvider) dataSourceName(token string) string {
-	slog.Info("[AWSAuthProvider] DataSourceName", "addr", a.DBEndpoint, "db_Name", a.DBName)
-	return fmt.Sprintf("%s:%s@tcp(%s)/%s?allowCleartextPasswords=true&tls=rds&charset=utf8mb4", a.DBUser(), token, a.DBEndpoint, a.DBName)
 }
 
 func (a *AWSAuthProvider) AccessToken() string {
@@ -53,22 +43,16 @@ func (a *AWSAuthProvider) AccessToken() string {
 	}
 
 	if a.Region == "" {
-		region := os.Getenv("RDS_REGION")
-		if region != "" {
-			slog.Warn("[AWSAuthProvider] region is empty, use ENV[RDS_REGION]", "region", region)
-			a.Region = region
-		} else {
-			slog.Warn("[AWSAuthProvider] region is empty, use default region ap-northeast-1")
-			a.Region = "ap-northeast-1"
-		}
+		log.Fatalf("DB region can not be empty, endpoint=%s, user=%s", a.DBEndpoint, a.User)
 	}
+
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(a.Region))
 	if err != nil {
-		panic("configuration error: " + err.Error())
+		log.Panic("configuration error", err)
 	}
-	authenticationToken, err := auth.BuildAuthToken(context.TODO(), a.DBEndpoint, a.Region, a.DBUser(), cfg.Credentials)
+	authenticationToken, err := auth.BuildAuthToken(context.TODO(), a.DBEndpoint, a.Region, a.User, cfg.Credentials)
 	if err != nil {
-		panic("failed to create authentication token: " + err.Error())
+		log.Panic("failed to create authentication token: " + err.Error())
 	}
 	elapse := time.Since(start)
 	slog.Info("[AWSAuthProvider] get aws access token", "elapse", elapse)
@@ -79,10 +63,6 @@ func (a *AWSAuthProvider) AccessToken() string {
 	}
 
 	return authenticationToken
-}
-
-func (a *AWSAuthProvider) DBUser() string {
-	return "cloud_iam"
 }
 
 func RegisterRDSMysqlCerts() {

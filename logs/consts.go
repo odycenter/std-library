@@ -32,4 +32,4 @@ var defaultLoggerMap = struct {
 
 var pattern = `{"@timestamp":"%s", "id":%q, "app":"%s", "level":"%s", "file":"%s:%d", "message":%q}`
 var withoutIdPattern = `{"@timestamp":"%s", "app":"%s", "level":"%s", "file":"%s:%d", "message":%q}`
-var levelPrefix = [LevelDebug + 1]string{"ERROR", "WARN", "[N]", "INFO", "DEBUG"}
+var levelPrefix = [LevelDebug + 1]string{"ERROR", "WARN", "WARN", "INFO", "DEBUG"}

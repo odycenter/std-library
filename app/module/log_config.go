@@ -5,21 +5,21 @@ import (
 	"log/slog"
 	"os"
 	app "std-library/app/conf"
+	internalLog "std-library/app/internal/log"
 	internalsys "std-library/app/internal/web/sys"
-	"std-library/app/log"
 )
 
 type LogConfig struct {
 	name          string
 	moduleContext *Context
-	handler       *log.Handler
+	handler       *internalLog.Handler
 }
 
 func (c *LogConfig) Initialize(moduleContext *Context, name string) {
 	c.name = name
 	c.moduleContext = moduleContext
 
-	c.handler = log.NewHandler(os.Stdout)
+	c.handler = internalLog.NewHandler(os.Stdout)
 	logger := slog.New(c.handler)
 	logger = logger.With(slog.String("app", app.Name))
 	slog.SetDefault(logger)
@@ -44,4 +44,5 @@ func (c *LogConfig) Appender() {
 }
 
 func (c *LogConfig) MaskedFields(fields ...string) {
+	internalLog.AddMaskedField(fields...)
 }

@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"os"
 	app "std-library/app/conf"
-	applog "std-library/app/log"
+	internalLog "std-library/app/internal/log"
 	"std-library/logs"
 	"strings"
 )
@@ -21,7 +21,7 @@ func (m *SystemModule) Initialize() {
 		log.Panic("EnvProperties is empty")
 	}
 
-	handler := applog.NewHandler(os.Stdout)
+	handler := internalLog.NewHandler(os.Stdout)
 	handler.SetLevel(slog.LevelDebug)
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
@@ -55,11 +55,9 @@ func (m *SystemModule) configureLog() {
 
 func (m *SystemModule) configureHTTP() {
 	httpListen := m.Property("sys.http.listen")
-	if httpListen == "" {
-		return
+	if httpListen != "" {
+		m.Http().Listen(httpListen)
 	}
-
-	m.Http().Listen(httpListen)
 
 	allowCIDR := m.Property("sys.api.allowCIDR")
 	if allowCIDR != "" {
@@ -70,7 +68,30 @@ func (m *SystemModule) configureHTTP() {
 }
 
 func (m *SystemModule) configureDB() {
-	// TODO
+	url := m.Property("sys.db.url")
+	if url != "" {
+		m.DB().Url(url)
+	}
+	user := m.Property("sys.db.user")
+	if user != "" {
+		m.DB().User(user)
+	}
+	password := m.Property("sys.db.password")
+	if password != "" {
+		m.DB().Password(password)
+	}
+	region := m.Property("sys.db.region")
+	if region != "" {
+		m.DB().Region(region)
+	}
+	poolSize := m.Property("sys.db.poolSize")
+	if poolSize != "" {
+		m.DB().PoolSizeString(poolSize)
+	}
+	alias := m.Property("sys.db.alias")
+	if alias != "" {
+		m.DB().Alias(alias)
+	}
 }
 
 func (m *SystemModule) configureMongo() {

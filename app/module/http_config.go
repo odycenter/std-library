@@ -54,6 +54,8 @@ func (c *HTTPConfig) GZip() {
 
 func (c *HTTPConfig) Listen(listen string) {
 	c.server.HttpHost = internal_web.Parse(listen)
+	c.moduleContext.AddListenPort(c.server.HttpHost.Port)
+	c.moduleContext.httpConfigAdded = true
 }
 
 func (c *HTTPConfig) ErrorWithOkStatus(val bool) {

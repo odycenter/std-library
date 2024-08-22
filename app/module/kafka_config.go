@@ -53,6 +53,7 @@ func (c *KafkaConfig) Uri(uri string) {
 	if c.uriString != "" {
 		log.Fatalf("kafka uri is already configured, uri=%s, previous=%s", uri, c.uri)
 	}
+	c.uriString = uri
 	u := kafka.Uri{}
 	u.Uri(uri)
 	c.uri = u.Parse()

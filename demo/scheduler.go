@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"path/filepath"
+	actionlog "std-library/app/log"
 	"std-library/app/module"
 	reflects "std-library/reflect"
 	"strconv"
@@ -23,7 +24,8 @@ func (m *ScheduleModule) Initialize() {
 		slog.Debug("every 1s")
 		slog.Info("every 1s")
 		slog.Warn("every 1s")
-		slog.Error("every 1s")
+		slog.Error("every 1s", "Password", "123")
+		actionlog.Context(&ctx, "Password", "123")
 	}))
 
 	//_, _ = m.Schedule().AddFuncJobWithName("@every 10s", "funcNameYouDefined", func(ctx context.Context) {

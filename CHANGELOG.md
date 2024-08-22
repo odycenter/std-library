@@ -1,6 +1,6 @@
 ## Change log
 
-### 1.8.0 (08/07/2024 - 08/14/2024)
+### 1.8.4 (08/07/2024 - 08/21/2024)
 
 * executor: add running/free/waiting metrics support
 * log:

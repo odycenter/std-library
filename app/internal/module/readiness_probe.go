@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const maxWaitTime = 27 * time.Second
+const maxWaitTime = 15 * time.Second
 
 type ReadinessProbe struct {
 	hostURIs []string
@@ -86,7 +86,7 @@ func ResolveHost(ctx context.Context, hostname string) {
 				log.Fatal("readiness check failed, host=" + hostname)
 			}
 			slog.WarnContext(ctx, fmt.Sprintf("[NOT_READY] dns probe failed, retry soon, host=%s", hostname))
-			time.Sleep(5 * time.Second)
+			time.Sleep(1 * time.Second)
 			continue
 		}
 		return

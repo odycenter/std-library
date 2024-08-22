@@ -44,12 +44,12 @@ func New(name string) *MongoImpl {
 	return impl
 }
 
-func (m *MongoImpl) Execute(_ context.Context) {
+func (m *MongoImpl) Execute(ctx context.Context) {
 	if m.initialized {
 		return
 	}
 
-	slog.Debug(fmt.Sprintf("mongo Initialize, name=%s", m.name))
+	slog.InfoContext(ctx, fmt.Sprintf("mongo Initialize, name=%s", m.name))
 	m.Initialize()
 }
 

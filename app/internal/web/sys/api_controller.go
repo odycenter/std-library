@@ -53,7 +53,7 @@ func (c *APIController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		w.Header().Set("Cache-Control", "public, max-age=60")
+		w.Header().Set("Cache-Control", "public, max-age=10")
 		w.Header().Set("Content-Type", "application/json")
 		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") && len(ApiJsonGzipped) > 0 {
 			w.Header().Set("Content-Encoding", "gzip")

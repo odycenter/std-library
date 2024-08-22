@@ -2,6 +2,7 @@ package module
 
 import (
 	"github.com/beego/beego/v2/server/web"
+	"log/slog"
 	internal "std-library/app/internal/module"
 	"std-library/app/internal/web/sys"
 	"std-library/app/property"
@@ -15,6 +16,8 @@ type Context struct {
 	PropertyManager   *property.Manager
 	propertyValidator *property.Validator
 	configs           sync.Map // map[string]Config
+	listenPorts       sync.Map // map[int]bool
+	httpConfigAdded   bool
 }
 
 func (m *Context) Initialize() {
@@ -26,6 +29,25 @@ func (m *Context) Initialize() {
 	m.propertyValidator = property.NewValidator()
 
 	web.Handler("/_sys/property", internal_sys.NewPropertyController(m.PropertyManager))
+}
+
+func (m *Context) AddListenPort(port int) {
+	if _, exists := m.listenPorts.Load(port); exists {
+		slog.Warn("Port already added", "port", port)
+		return
+	}
+	m.listenPorts.Store(port, true)
+}
+
+func (m *Context) ConfigByType(configType, name string, newConfig func() Config) Config {
+	cfg, ok := m.configs.Load(configType + ":" + name)
+	if !ok {
+		config := newConfig()
+		config.Initialize(m, name)
+		m.configs.Store(configType+":"+name, config)
+		cfg = config
+	}
+	return cfg.(Config)
 }
 
 func (m *Context) Config(name string, newConfig func() Config) Config {

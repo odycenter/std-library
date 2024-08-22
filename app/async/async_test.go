@@ -3,15 +3,19 @@ package async_test
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"log/slog"
 	"std-library/app/async"
 	actionlog "std-library/app/log"
-	"std-library/app/log/consts/logKey"
 	"std-library/app/web/errors"
 	"sync"
 	"testing"
 )
 
 func TestRunFunc(t *testing.T) {
+	async.RunFunc(nil, func(ctx context.Context) {
+		actionlog.Context(&ctx, "key", "value2")
+		slog.InfoContext(ctx, "info message", "key", "value")
+	})
 	var a int
 	var b int
 	wg := sync.WaitGroup{}
@@ -20,13 +24,13 @@ func TestRunFunc(t *testing.T) {
 		actionlog.Context(&ctx, "key", "value2")
 	}, &wg)
 
-	ctx := context.WithValue(context.Background(), logKey.Action, "root_action")
-	ctx = context.WithValue(ctx, logKey.Id, "id-abcd")
-	async.RunFuncWithName(&ctx, "child-action", func(ctx context.Context) {
-		b = 5
-		actionlog.Context(&ctx, "key", "value")
-		actionlog.Context(&ctx, "key", "value2")
-	}, &wg)
+	async.RunFuncWithName(nil, "root-action", func(ctx context.Context) {
+		async.RunFuncWithName(&ctx, "child-action", func(ctx context.Context) {
+			b = 5
+			actionlog.Context(&ctx, "key", "value")
+			actionlog.Context(&ctx, "key", "value2")
+		}, &wg)
+	})
 
 	wg.Wait()
 	assert.Equal(t, 8, a+b)

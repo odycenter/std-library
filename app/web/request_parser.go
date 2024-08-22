@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	internallog "std-library/app/internal/log"
 	actionlog "std-library/app/log"
 	"std-library/app/log/consts/logKey"
 	"std-library/app/log/dto"
@@ -79,7 +80,7 @@ func ParseHeaders(request *http.Request) string {
 		}
 		builder.WriteString(key)
 		builder.WriteString("=")
-		if contains(actionlog.MaskedFields(), key) {
+		if contains(internallog.MaskedFields, key) {
 			builder.WriteString("******")
 		} else if len(value) == 1 {
 			builder.WriteString(value[0])

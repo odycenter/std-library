@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/beego/beego/v2/client/orm"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"log/slog"
@@ -73,16 +72,6 @@ func serverInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySer
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, timeout)
 		defer cancel()
-	}
-
-	orm.LogFunc = func(query map[string]interface{}) {
-		attrs := make([]slog.Attr, 0, len(query)+1)
-		for k, v := range query {
-			attrs = append(attrs, slog.Any(k, v))
-		}
-		attrs = append(attrs, slog.Any(logKey.Id, actionLog.Id))
-
-		slog.LogAttrs(context.Background(), slog.LevelDebug, "", attrs...)
 	}
 
 	ctx = context.WithValue(ctx, logKey.Id, actionLog.Id)

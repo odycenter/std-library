@@ -106,13 +106,13 @@ func (actionLog *ActionLog) AddStat(statMap map[string]float64) {
 	}
 }
 
-func (actionLog *ActionLog) Output(maskedFields []string) {
-	internallog.Logger.Println(actionLog.String(maskedFields))
+func (actionLog *ActionLog) Output() {
+	internallog.Logger.Println(actionLog.String())
 	actionLog.Context = nil
 	actionLog.Stat = nil
 }
 
-func (actionLog *ActionLog) String(maskedFields []string) string {
+func (actionLog *ActionLog) String() string {
 	actionLogMessage := map[string]any{
 		logKey.Id:    actionLog.Id,
 		"app":        app.Name,
@@ -131,19 +131,19 @@ func (actionLog *ActionLog) String(maskedFields []string) string {
 	if actionLog.RequestBody != nil {
 		switch actionLog.RequestBody.(type) {
 		case string:
-			actionLogMessage["request_body"] = util.Filter(actionLog.RequestBody.(string), maskedFields...)
+			actionLogMessage["request_body"] = util.Filter(actionLog.RequestBody.(string), internallog.MaskedFields...)
 		default:
 			requestBody, _ := json.Marshal(actionLog.RequestBody)
-			actionLogMessage["request_body"] = util.Filter(string(requestBody), maskedFields...)
+			actionLogMessage["request_body"] = util.Filter(string(requestBody), internallog.MaskedFields...)
 		}
 	}
 	if actionLog.ResponseBody != nil {
 		switch actionLog.ResponseBody.(type) {
 		case string:
-			actionLogMessage["response_body"] = util.Filter(actionLog.ResponseBody.(string), maskedFields...)
+			actionLogMessage["response_body"] = util.Filter(actionLog.ResponseBody.(string), internallog.MaskedFields...)
 		default:
 			responseBody, _ := json.Marshal(actionLog.ResponseBody)
-			actionLogMessage["response_body"] = util.Filter(string(responseBody), maskedFields...)
+			actionLogMessage["response_body"] = util.Filter(string(responseBody), internallog.MaskedFields...)
 		}
 	}
 	if actionLog.TraceText != nil && len(actionLog.TraceText) > 0 {

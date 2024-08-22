@@ -21,6 +21,7 @@ func ClientInterceptor(ctx context.Context, method string, req, reply interface{
 	if existsId := ctx.Value(logKey.Id); existsId != nil {
 		id := existsId.(string)
 		actionLog.Id = id
+		actionlog.Stat(&ctx, "grpc_request", 1)
 	}
 	actionLog.PutContext("conn_target", cc.Target())
 	defer func() {
@@ -57,12 +58,12 @@ func ClientInterceptor(ctx context.Context, method string, req, reply interface{
 	} else {
 		actionLog.End()
 		if actionLog.Elapsed() > slowOperationThresholdInNanos {
-			actionLog.PutContext("slow_grpc", true)
+			actionLog.PutContext("slow_process", true)
 			actionLog.Result("warn")
 		} else {
 			actionLog.Result("ok")
 		}
-		actionlog.Output(actionLog)
+		actionLog.Output()
 	}
 
 	return err

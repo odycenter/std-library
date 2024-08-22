@@ -11,9 +11,10 @@ import (
 )
 
 type Manager struct {
-	properties     Properties
-	overrideHelper OverrideHelper
-	keysInOrder    []string
+	properties      Properties
+	overrideHelper  OverrideHelper
+	keysInOrder     []string
+	DefaultHTTPPort int
 }
 
 type Properties map[string]string

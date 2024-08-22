@@ -62,6 +62,7 @@ func (c *GrpcServerConfig) Server() *grpc.Server {
 	}
 
 	host := internal_web.Parse(c.listen)
+	c.moduleContext.AddListenPort(host.Port)
 	c.grpcServer.HttpListen = host.String()
 	c.moduleContext.StartupHook.StartStage2 = append(c.moduleContext.StartupHook.StartStage2, c.grpcServer)
 	c.moduleContext.ShutdownHook.Add(internal.STAGE_0, func(ctx context.Context, timeoutInMs int64) {

@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net"
 	"os"
 	"os/signal"
+	app "std-library/app/conf"
 	actionlog "std-library/app/log"
 	"std-library/app/log/consts/logKey"
 	"std-library/app/log/dto"
+	"strconv"
 	"syscall"
 )
 
@@ -44,13 +47,14 @@ func (a *App) Configure() {
 }
 
 func (a *App) Start() {
+	a.startDefaultHttpServer()
 	a.ModuleContext.Validate()
 
 	a.ModuleContext.Probe.Check(a.ctx)
 	slog.InfoContext(a.ctx, "execute startup tasks")
 	a.ModuleContext.StartupHook.DoInitialize(a.ctx)
 	a.ModuleContext.StartupHook.DoStart(a.ctx)
-	slog.InfoContext(a.ctx, fmt.Sprintf("startup completed, elapsed=%v", a.actionLog.Elapsed()))
+	slog.InfoContext(a.ctx, "startup completed", "elapsed", a.actionLog.Elapsed())
 	a.cleanup()
 	actionlog.End(a.actionLog, "ok")
 	a.shutdownHook()
@@ -68,4 +72,50 @@ func (a *App) shutdownHook() {
 	<-stop
 
 	a.ModuleContext.ShutdownHook.Run()
+}
+
+func (a *App) startDefaultHttpServer() {
+	if a.ModuleContext.httpConfigAdded {
+		return
+	}
+
+	if app.Local() {
+		listenPort := 18080
+		listenPort = a.getAvailablePort(listenPort)
+		a.ModuleContext.PropertyManager.DefaultHTTPPort = listenPort
+		slog.WarnContext(a.ctx, "[Local] No HTTP listen port configured, using candidate port to start HTTP server", "port", listenPort)
+		a.Common.Http().Listen(strconv.Itoa(listenPort))
+		return
+	}
+
+	for _, port := range []int{80, 8080, 8443, 9080, 18080} {
+		if _, ok := a.ModuleContext.listenPorts.Load(port); !ok && isPortAvailable(port) {
+			a.ModuleContext.PropertyManager.DefaultHTTPPort = port
+			slog.WarnContext(a.ctx, "No http listen port configured, using candidate port to start HTTP server", "port", port)
+			a.Common.Http().Listen(strconv.Itoa(port))
+			return
+		}
+	}
+
+	slog.ErrorContext(a.ctx, "no available ports found for HTTP server")
+}
+
+func (a *App) getAvailablePort(port int) int {
+	for {
+		if isPortAvailable(port) {
+			break
+		}
+		port++
+	}
+	return port
+}
+
+func isPortAvailable(port int) bool {
+	addr := fmt.Sprintf(":%d", port)
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return false
+	}
+	ln.Close()
+	return true
 }

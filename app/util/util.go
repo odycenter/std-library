@@ -2,8 +2,10 @@ package util
 
 import (
 	"context"
+	internalDB "std-library/app/internal/db"
 	internal "std-library/app/internal/module"
 	internalscheduler "std-library/app/internal/scheduler"
+	internalhttp "std-library/app/internal/web/http"
 	"std-library/app/log/consts/logKey"
 	"std-library/app/scheduler"
 	"time"
@@ -35,4 +37,12 @@ func NewScheduler() scheduler.Scheduler {
 func ReadinessProbe(hostURI string) {
 	hostname := internal.Hostname(hostURI)
 	internal.ResolveHost(context.Background(), hostname)
+}
+
+func NewAccessControl() internalhttp.IPv4AccessControl {
+	return internalhttp.IPv4AccessControl{}
+}
+
+func RegisterOrmLogger() {
+	internalDB.ConfigureLog()
 }
