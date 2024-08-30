@@ -1,4 +1,4 @@
-package beego
+package web
 
 import (
 	"log/slog"

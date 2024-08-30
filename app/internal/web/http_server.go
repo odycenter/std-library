@@ -1,11 +1,10 @@
-package beego
+package web
 
 import (
 	"context"
 	"fmt"
 	beegoWeb "github.com/beego/beego/v2/server/web"
 	"log/slog"
-	internalweb "std-library/app/internal/web"
 	"std-library/app/web"
 	"time"
 )
@@ -14,20 +13,20 @@ type HTTPServer struct {
 	server          *beegoWeb.HttpServer
 	shutdownHandler *web.ShutdownHandler
 	ioHandler       *IOHandler
-	actionLog       *ActionLogFilter
-	HttpHost        *internalweb.HTTPHost
+	handler         *HTTPHandler
+	HttpHost        *web.HTTPHost
 }
 
 func NewHTTPServer() *HTTPServer {
 	shutdownHandler := web.NewShutdownHandler()
-	ioHandler := IOHandler{
+	ioHandler := &IOHandler{
 		shutdownHandler: shutdownHandler,
 	}
 	server := &HTTPServer{
 		server:          beegoWeb.BeeApp,
 		shutdownHandler: shutdownHandler,
-		ioHandler:       &ioHandler,
-		actionLog: &ActionLogFilter{
+		ioHandler:       ioHandler,
+		handler: &HTTPHandler{
 			ErrorWithOkStatus: false,
 		},
 	}
@@ -43,20 +42,20 @@ func (s *HTTPServer) GZip() {
 }
 
 func (s *HTTPServer) ErrorWithOkStatus(val bool) {
-	s.actionLog.ErrorWithOkStatus = val
+	s.handler.ErrorWithOkStatus = val
 }
 
 func (s *HTTPServer) CustomErrorResponseMessage(f func(code int, message string) map[string]interface{}) {
-	s.actionLog.CustomErrorResponseMessage = f
+	s.handler.CustomErrorResponseMessage = f
 }
 
 func (s *HTTPServer) Execute(ctx context.Context) {
-	slog.Warn(fmt.Sprintf("web server Running on http://%v", s.HttpHost.String()))
+	slog.WarnContext(ctx, fmt.Sprintf("web server Running on http://%v", s.HttpHost.String()))
 	go s.Start()
 }
 
 func (s *HTTPServer) Start() {
-	s.server.Run(s.HttpHost.String(), s.ioHandler.Handler, s.actionLog.Handler)
+	s.server.Run(s.HttpHost.String(), s.ioHandler.Handler, s.handler.Handler)
 }
 
 func (s *HTTPServer) Shutdown(ctx context.Context) {

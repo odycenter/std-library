@@ -3,7 +3,7 @@ package internal_redis_test
 import (
 	"github.com/stretchr/testify/assert"
 	internal_redis "std-library/app/internal/redis"
-	"std-library/app/internal/web"
+	"std-library/app/web"
 	"testing"
 )
 

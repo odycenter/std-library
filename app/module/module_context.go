@@ -1,9 +1,13 @@
 package module
 
 import (
+	"context"
 	"github.com/beego/beego/v2/server/web"
 	"log/slog"
+	"os"
+	internalLog "std-library/app/internal/log"
 	internal "std-library/app/internal/module"
+	internalWeb "std-library/app/internal/web"
 	"std-library/app/internal/web/sys"
 	"std-library/app/property"
 	"sync"
@@ -17,18 +21,42 @@ type Context struct {
 	propertyValidator *property.Validator
 	configs           sync.Map // map[string]Config
 	listenPorts       sync.Map // map[int]bool
+	httpServer        *internalWeb.HTTPServer
 	httpConfigAdded   bool
 }
 
 func (m *Context) Initialize() {
+	handler := internalLog.NewHandler(os.Stdout)
+	handler.SetLevel(slog.LevelDebug)
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+
 	m.StartupHook = &internal.StartupHook{}
 	m.ShutdownHook = &internal.ShutdownHook{}
 	m.Probe = &internal.ReadinessProbe{}
 	m.ShutdownHook.Initialize()
 	m.PropertyManager = property.NewManager()
 	m.propertyValidator = property.NewValidator()
+	m.httpServer = m.createHTTPServer()
 
 	web.Handler("/_sys/property", internal_sys.NewPropertyController(m.PropertyManager))
+}
+
+func (m *Context) createHTTPServer() *internalWeb.HTTPServer {
+	httpServer := internalWeb.NewHTTPServer()
+
+	m.StartupHook.StartStage2 = append(m.StartupHook.StartStage2, httpServer)
+	m.ShutdownHook.Add(internal.STAGE_0, func(ctx context.Context, timeoutInMs int64) {
+		httpServer.Shutdown(ctx)
+	})
+	m.ShutdownHook.Add(internal.STAGE_1, func(ctx context.Context, timeoutInMs int64) {
+		httpServer.AwaitRequestCompletion(ctx, timeoutInMs)
+	})
+	m.ShutdownHook.Add(internal.STAGE_8, func(ctx context.Context, timeoutInMs int64) {
+		httpServer.AwaitTermination(ctx)
+	})
+
+	return httpServer
 }
 
 func (m *Context) AddListenPort(port int) {

@@ -76,22 +76,15 @@ func (d *DBImpl) initialize() {
 	if d.initialized {
 		return
 	}
+	d.db = d.connect()
 
-	config := d.authConfig()
-	connector, err := mysql.NewConnector(config)
-	if err != nil {
-		log.Fatalf("DB connector create failed, name=%s, err=%v", d.name, err)
-	}
-
-	d.db = sql.OpenDB(connector)
-
-	name := d.name
+	alias := d.name
 	if d.alias != "" {
 		slog.Debug("Registering DB by alias", "name", d.name, "alias", d.alias)
-		name = d.alias
+		alias = d.alias
 	}
 
-	err = orm.AddAliasWthDB(name, "mysql", d.db,
+	err := orm.AddAliasWthDB(alias, "mysql", d.db,
 		orm.MaxIdleConnections(d.poolMinSize),
 		orm.MaxOpenConnections(d.poolMaxSize),
 		orm.ConnMaxIdletime(d.connMaxIdleTime),
@@ -104,7 +97,7 @@ func (d *DBImpl) initialize() {
 	d.initialized = true
 }
 
-func (d *DBImpl) authConfig() (config *mysql.Config) {
+func (d *DBImpl) connect() *sql.DB {
 	config, err := mysql.ParseDSN(d.url)
 	if err != nil {
 		log.Fatalf("DB uri parse failed, name=%s uri=%s, err=%v", d.name, d.url, err)
@@ -141,7 +134,12 @@ func (d *DBImpl) authConfig() (config *mysql.Config) {
 		slog.Info("Connecting to MySQL using IAM", "dsn", config.FormatDSN())
 	}
 
-	return config
+	connector, err := mysql.NewConnector(config)
+	if err != nil {
+		log.Fatalf("DB connector create failed, name=%s, err=%v", d.name, err)
+	}
+
+	return sql.OpenDB(connector)
 }
 
 func (d *DBImpl) Close() {

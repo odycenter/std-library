@@ -1,6 +1,6 @@
 ## Change log
 
-### 1.8.4 (08/07/2024 - 08/21/2024)
+### 1.8.5 (08/07/2024 - 08/21/2024)
 
 * executor: add running/free/waiting metrics support
 * log:
@@ -8,6 +8,8 @@
     - `integration with slog`
     - `dynamic log level change by /_sys/log`
 * remove ipx support
+* db: config support
+* http: http: server is enabled by default port 18080, even when not configured
 
 ### 1.7.49 (05/30/2024 - 07/31/2024)
 

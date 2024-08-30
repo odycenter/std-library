@@ -79,25 +79,19 @@ func (a *App) startDefaultHttpServer() {
 		return
 	}
 
+	listenPort := 18080
+
 	if app.Local() {
-		listenPort := 18080
 		listenPort = a.getAvailablePort(listenPort)
-		a.ModuleContext.PropertyManager.DefaultHTTPPort = listenPort
-		slog.WarnContext(a.ctx, "[Local] No HTTP listen port configured, using candidate port to start HTTP server", "port", listenPort)
-		a.Common.Http().Listen(strconv.Itoa(listenPort))
+	} else if _, ok := a.ModuleContext.listenPorts.Load(listenPort); ok || !isPortAvailable(listenPort) {
+		slog.ErrorContext(a.ctx, "no available ports found for HTTP server")
 		return
 	}
 
-	for _, port := range []int{80, 8080, 8443, 9080, 18080} {
-		if _, ok := a.ModuleContext.listenPorts.Load(port); !ok && isPortAvailable(port) {
-			a.ModuleContext.PropertyManager.DefaultHTTPPort = port
-			slog.WarnContext(a.ctx, "No http listen port configured, using candidate port to start HTTP server", "port", port)
-			a.Common.Http().Listen(strconv.Itoa(port))
-			return
-		}
-	}
+	slog.WarnContext(a.ctx, "No http listen port configured, using candidate port to start HTTP server", "port", listenPort, "local", app.Local())
 
-	slog.ErrorContext(a.ctx, "no available ports found for HTTP server")
+	a.ModuleContext.PropertyManager.DefaultHTTPPort = listenPort
+	a.Common.Http().Listen(strconv.Itoa(listenPort))
 }
 
 func (a *App) getAvailablePort(port int) int {
@@ -116,6 +110,6 @@ func isPortAvailable(port int) bool {
 	if err != nil {
 		return false
 	}
-	ln.Close()
+	_ = ln.Close()
 	return true
 }

@@ -4,9 +4,7 @@ import (
 	"embed"
 	"log"
 	"log/slog"
-	"os"
 	app "std-library/app/conf"
-	internalLog "std-library/app/internal/log"
 	"std-library/logs"
 	"strings"
 )
@@ -21,10 +19,6 @@ func (m *SystemModule) Initialize() {
 		log.Panic("EnvProperties is empty")
 	}
 
-	handler := internalLog.NewHandler(os.Stdout)
-	handler.SetLevel(slog.LevelDebug)
-	logger := slog.New(handler)
-	slog.SetDefault(logger)
 	m.LoadProperties(m.EnvProperties, "sys.properties")
 	appName := m.RequiredProperty("core.app.name")
 	logs.AppName = appName

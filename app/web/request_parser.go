@@ -1,8 +1,9 @@
 package web
 
 import (
+	"bytes"
 	"context"
-	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	internallog "std-library/app/internal/log"
@@ -34,10 +35,21 @@ func ParseRequest(r *http.Request) (context.Context, dto.ActionLog) {
 	if queryParams != "" {
 		log.PutContext("query_params", queryParams)
 	}
-	//contentType := r.Header.Get("Content-Type")
-	//if strings.ToLower(strings.Split(contentType, ";")[0]) == "application/x-www-form-urlencoded" {
-	RequestBody(log, r)
-	//}
+
+	contentType := r.Header.Get("Content-Type")
+	log.PutContext("content_type", contentType)
+	switch {
+	case strings.HasPrefix(contentType, "application/x-www-form-urlencoded"):
+		RequestBody(&log, r)
+	default:
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			log.PutContext("read_body_error", err.Error())
+		} else {
+			r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+			log.RequestBody = string(bodyBytes)
+		}
+	}
 
 	requestId := r.Header.Get("x-request-id")
 	if requestId != "" {
@@ -100,13 +112,13 @@ func contains(s []string, str string) bool {
 	return false
 }
 
-func RequestBody(actionLog dto.ActionLog, request *http.Request) {
+func RequestBody(actionLog *dto.ActionLog, request *http.Request) {
 	stopwatch := time.Now()
 	err := request.ParseForm()
 	elapsed := time.Since(stopwatch).Nanoseconds()
 	actionLog.Stat["parse_form_elapsed"] = float64(elapsed)
 	if err != nil {
-		slog.Warn(fmt.Sprintf("parse form error", err.Error()))
+		slog.Warn("parse form failed", "error", err.Error())
 		return
 	}
 	result := parseForm(request)

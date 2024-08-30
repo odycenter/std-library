@@ -3,67 +3,50 @@ package module
 import (
 	"bytes"
 	"compress/gzip"
-	"context"
 	"embed"
 	"github.com/beego/beego/v2/server/web"
 	"io"
 	"log"
 	"log/slog"
-	internal "std-library/app/internal/module"
-	"std-library/app/internal/web"
 	internalHttp "std-library/app/internal/web/http"
 	internalSys "std-library/app/internal/web/sys"
-	"std-library/app/web/beego"
+	appWeb "std-library/app/web"
 )
 
 type HTTPConfig struct {
 	moduleContext *Context
-	server        *beego.HTTPServer
 	apiController *internalSys.APIController
 }
 
 func (c *HTTPConfig) Initialize(moduleContext *Context, name string) {
 	c.moduleContext = moduleContext
-	c.server = beego.NewHTTPServer()
-
-	c.moduleContext.StartupHook.StartStage2 = append(c.moduleContext.StartupHook.StartStage2, c.server)
-
-	c.moduleContext.ShutdownHook.Add(internal.STAGE_0, func(ctx context.Context, timeoutInMs int64) {
-		c.server.Shutdown(ctx)
-	})
-	c.moduleContext.ShutdownHook.Add(internal.STAGE_1, func(ctx context.Context, timeoutInMs int64) {
-		c.server.AwaitRequestCompletion(ctx, timeoutInMs)
-	})
-	c.moduleContext.ShutdownHook.Add(internal.STAGE_8, func(ctx context.Context, timeoutInMs int64) {
-		c.server.AwaitTermination(ctx)
-	})
 
 	c.apiController = internalSys.NewAPIController()
 	web.Handler("/_sys/api/*", c.apiController)
 }
 
 func (c *HTTPConfig) Validate() {
-	if c.server.HttpHost == nil {
+	if c.moduleContext.httpServer.HttpHost == nil {
 		log.Fatal("http listen is not configured, please configure first")
 	}
 }
 
 func (c *HTTPConfig) GZip() {
-	c.server.GZip()
+	c.moduleContext.httpServer.GZip()
 }
 
 func (c *HTTPConfig) Listen(listen string) {
-	c.server.HttpHost = internal_web.Parse(listen)
-	c.moduleContext.AddListenPort(c.server.HttpHost.Port)
+	c.moduleContext.httpServer.HttpHost = appWeb.Parse(listen)
+	c.moduleContext.AddListenPort(c.moduleContext.httpServer.HttpHost.Port)
 	c.moduleContext.httpConfigAdded = true
 }
 
 func (c *HTTPConfig) ErrorWithOkStatus(val bool) {
-	c.server.ErrorWithOkStatus(val)
+	c.moduleContext.httpServer.ErrorWithOkStatus(val)
 }
 
 func (c *HTTPConfig) CustomErrorResponseMessage(f func(code int, message string) map[string]interface{}) {
-	c.server.CustomErrorResponseMessage(f)
+	c.moduleContext.httpServer.CustomErrorResponseMessage(f)
 }
 
 func (c *HTTPConfig) APIContent(envFS *map[string]embed.FS) {

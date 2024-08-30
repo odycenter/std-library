@@ -3,7 +3,7 @@ package internal_sys
 import (
 	"net/http"
 	"os"
-	internal_http "std-library/app/internal/web/http"
+	internalHttp "std-library/app/internal/web/http"
 	"std-library/app/property"
 	"std-library/app/web/errors"
 	"std-library/nets"
@@ -13,13 +13,13 @@ import (
 
 type PropertyController struct {
 	propertyManager *property.Manager
-	accessControl   *internal_http.IPv4AccessControl
+	accessControl   *internalHttp.IPv4AccessControl
 }
 
 func NewPropertyController(propertyManager *property.Manager) *PropertyController {
 	return &PropertyController{
 		propertyManager: propertyManager,
-		accessControl:   &internal_http.IPv4AccessControl{},
+		accessControl:   &internalHttp.IPv4AccessControl{},
 	}
 }
 

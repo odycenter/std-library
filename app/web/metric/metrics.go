@@ -8,12 +8,12 @@ import (
 	"google.golang.org/grpc"
 	"log/slog"
 	"net/http"
-	internalweb "std-library/app/internal/web"
 	internal_http "std-library/app/internal/web/http"
+	"std-library/app/web"
 )
 
 type Server struct {
-	HttpHost *internalweb.HTTPHost
+	HttpHost *web.HTTPHost
 	server   *http.Server
 }
 

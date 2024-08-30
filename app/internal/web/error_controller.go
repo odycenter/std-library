@@ -1,4 +1,4 @@
-package beego
+package web
 
 import (
 	beegoWeb "github.com/beego/beego/v2/server/web"

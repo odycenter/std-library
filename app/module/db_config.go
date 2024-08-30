@@ -7,6 +7,7 @@ import (
 	internal "std-library/app/internal/module"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type DBConfig struct {
@@ -116,5 +117,14 @@ func (c *DBConfig) Alias(alias string) *DBConfig {
 	}
 
 	c.dbImpl.Alias(alias)
+	return c
+}
+
+func (c *DBConfig) ConnMaxIdleTime(t time.Duration) *DBConfig {
+	if c.dbImpl.Initialized() {
+		log.Fatalf("DB is already initialized, can not set conn max idle time! name=%s", c.name)
+	}
+
+	c.dbImpl.ConnMaxIdleTime(t)
 	return c
 }

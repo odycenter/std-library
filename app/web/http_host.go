@@ -1,4 +1,4 @@
-package internal_web
+package web
 
 import (
 	"fmt"

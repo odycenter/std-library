@@ -19,10 +19,10 @@ func AddMaskedField(fieldNames ...string) {
 	defer maskedFieldsMu.Unlock()
 
 	for _, fieldName := range fieldNames {
+		MaskedFields = append(MaskedFields, fieldName)
 		if _, exists := maskedFieldsMap[fieldName]; !exists {
 			maskedFieldsMap[fieldName] = struct{}{}
 			maskedFieldsMap[strings.ToLower(fieldName)] = struct{}{}
-			MaskedFields = append(MaskedFields, fieldName)
 		}
 	}
 }

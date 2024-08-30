@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	internal "std-library/app/internal/module"
-	"std-library/app/internal/web"
+	"std-library/app/web"
 	server "std-library/app/web/grpc"
 )
 
@@ -61,7 +61,7 @@ func (c *GrpcServerConfig) Server() *grpc.Server {
 		c.grpcServer.MaxConnections(c.maxConnections)
 	}
 
-	host := internal_web.Parse(c.listen)
+	host := web.Parse(c.listen)
 	c.moduleContext.AddListenPort(host.Port)
 	c.grpcServer.HttpListen = host.String()
 	c.moduleContext.StartupHook.StartStage2 = append(c.moduleContext.StartupHook.StartStage2, c.grpcServer)

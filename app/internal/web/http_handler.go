@@ -1,4 +1,4 @@
-package beego
+package web
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"std-library/app/web/errors"
 )
 
-type ActionLogFilter struct {
+type HTTPHandler struct {
 	CustomErrorResponseMessage func(code int, message string) map[string]interface{}
 	ErrorWithOkStatus          bool
 }
@@ -44,7 +44,7 @@ func (w *customResponseWriter) GetContentLength() int {
 	return w.contentLength
 }
 
-func (f *ActionLogFilter) Handler(next http.Handler) http.Handler {
+func (f *HTTPHandler) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		contextMap := make(map[string][]any)
 		statMap := make(map[string]float64)

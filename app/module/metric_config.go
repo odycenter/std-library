@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 	internal "std-library/app/internal/module"
-	"std-library/app/internal/web"
+	"std-library/app/web"
 	"std-library/app/web/metric"
 )
 
@@ -17,7 +17,7 @@ type MetricConfig struct {
 func (c *MetricConfig) Initialize(moduleContext *Context, _ string) {
 	c.moduleContext = moduleContext
 	c.server = &metric.Server{
-		HttpHost: &internal_web.HTTPHost{
+		HttpHost: &web.HTTPHost{
 			Host: "0.0.0.0",
 			Port: 8000,
 		},
@@ -36,5 +36,5 @@ func (c *MetricConfig) Validate() {
 }
 
 func (c *MetricConfig) Listen(listen string) {
-	c.server.HttpHost = internal_web.Parse(listen)
+	c.server.HttpHost = web.Parse(listen)
 }
