@@ -2,11 +2,11 @@ package internal_sys
 
 import (
 	"embed"
+	"github.com/odycenter/std-library/app/internal/web/http"
+	"github.com/odycenter/std-library/app/web/errors"
+	"github.com/odycenter/std-library/nets"
 	"log/slog"
 	"net/http"
-	"std-library/app/internal/web/http"
-	"std-library/app/web/errors"
-	"std-library/nets"
 	"strings"
 	"sync"
 )

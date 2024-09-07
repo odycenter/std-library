@@ -3,10 +3,10 @@ package module
 import (
 	"context"
 	"fmt"
+	internal "github.com/odycenter/std-library/app/internal/module"
+	internalredis "github.com/odycenter/std-library/app/internal/redis"
 	"log"
 	"log/slog"
-	internal "std-library/app/internal/module"
-	internalredis "std-library/app/internal/redis"
 	"time"
 )
 

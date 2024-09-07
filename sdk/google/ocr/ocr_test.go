@@ -3,8 +3,8 @@ package ocr_test
 import (
 	"context"
 	"fmt"
+	"github.com/odycenter/std-library/sdk/google/ocr"
 	"os"
-	"std-library/sdk/google/ocr"
 	"testing"
 	"time"
 )

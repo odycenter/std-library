@@ -4,6 +4,7 @@ package mongo
 import (
 	"context"
 	"crypto/tls"
+	app "github.com/odycenter/std-library/app/conf"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/event"
@@ -11,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
-	app "std-library/app/conf"
 	"sync"
 	"time"
 )

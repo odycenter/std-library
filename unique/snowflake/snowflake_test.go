@@ -2,7 +2,7 @@ package snowflake_test
 
 import (
 	"fmt"
-	"std-library/unique/snowflake"
+	"github.com/odycenter/std-library/unique/snowflake"
 	"testing"
 )
 

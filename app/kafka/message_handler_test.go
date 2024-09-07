@@ -3,13 +3,13 @@ package kafka
 import (
 	"context"
 	"fmt"
+	actionlog "github.com/odycenter/std-library/app/log"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
+	"github.com/odycenter/std-library/app/web/errors"
 	kafca "github.com/segmentio/kafka-go"
 	"log/slog"
 	"os"
 	"runtime/pprof"
-	actionlog "std-library/app/log"
-	"std-library/app/log/consts/logKey"
-	"std-library/app/web/errors"
 	"testing"
 	"time"
 )

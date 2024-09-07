@@ -2,11 +2,11 @@ package async_test
 
 import (
 	"context"
+	"github.com/odycenter/std-library/app/async"
+	actionlog "github.com/odycenter/std-library/app/log"
+	"github.com/odycenter/std-library/app/web/errors"
 	"github.com/stretchr/testify/assert"
 	"log/slog"
-	"std-library/app/async"
-	actionlog "std-library/app/log"
-	"std-library/app/web/errors"
 	"sync"
 	"testing"
 )

@@ -1,12 +1,12 @@
 package internal_sys
 
 import (
+	internalHttp "github.com/odycenter/std-library/app/internal/web/http"
+	"github.com/odycenter/std-library/app/property"
+	"github.com/odycenter/std-library/app/web/errors"
+	"github.com/odycenter/std-library/nets"
 	"net/http"
 	"os"
-	internalHttp "std-library/app/internal/web/http"
-	"std-library/app/property"
-	"std-library/app/web/errors"
-	"std-library/nets"
 	"strconv"
 	"strings"
 )

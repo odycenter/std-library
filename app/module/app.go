@@ -3,14 +3,14 @@ package module
 import (
 	"context"
 	"fmt"
+	app "github.com/odycenter/std-library/app/conf"
+	actionlog "github.com/odycenter/std-library/app/log"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
+	"github.com/odycenter/std-library/app/log/dto"
 	"log/slog"
 	"net"
 	"os"
 	"os/signal"
-	app "std-library/app/conf"
-	actionlog "std-library/app/log"
-	"std-library/app/log/consts/logKey"
-	"std-library/app/log/dto"
 	"strconv"
 	"syscall"
 )

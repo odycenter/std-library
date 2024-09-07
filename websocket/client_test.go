@@ -1,8 +1,8 @@
 package websocket_test
 
 import (
+	"github.com/odycenter/std-library/websocket"
 	"log"
-	"std-library/websocket"
 	"testing"
 )
 

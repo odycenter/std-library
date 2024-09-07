@@ -2,8 +2,8 @@ package slice_test
 
 import (
 	"fmt"
+	"github.com/odycenter/std-library/containers/slice"
 	"github.com/stretchr/testify/assert"
-	"std-library/containers/slice"
 	"testing"
 )
 

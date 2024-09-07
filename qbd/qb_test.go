@@ -2,7 +2,7 @@ package qbd_test
 
 import (
 	"fmt"
-	"std-library/qbd"
+	"github.com/odycenter/std-library/qbd"
 	"testing"
 )
 

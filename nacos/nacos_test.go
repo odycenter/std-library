@@ -2,7 +2,7 @@ package nacos_test
 
 import (
 	"fmt"
-	"std-library/nacos"
+	"github.com/odycenter/std-library/nacos"
 	"testing"
 	"time"
 )

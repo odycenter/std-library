@@ -1,9 +1,9 @@
 package internal_redis_test
 
 import (
+	internal_redis "github.com/odycenter/std-library/app/internal/redis"
+	"github.com/odycenter/std-library/app/web"
 	"github.com/stretchr/testify/assert"
-	internal_redis "std-library/app/internal/redis"
-	"std-library/app/web"
 	"testing"
 )
 

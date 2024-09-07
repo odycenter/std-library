@@ -4,11 +4,11 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	app "github.com/odycenter/std-library/app/conf"
+	actionlog "github.com/odycenter/std-library/app/log"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
 	"github.com/segmentio/kafka-go"
 	"net"
-	app "std-library/app/conf"
-	actionlog "std-library/app/log"
-	"std-library/app/log/consts/logKey"
 	"time"
 )
 

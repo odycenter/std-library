@@ -1,8 +1,8 @@
 package regexps_test
 
 import (
+	"github.com/odycenter/std-library/regexps"
 	"log"
-	"std-library/regexps"
 	"testing"
 )
 

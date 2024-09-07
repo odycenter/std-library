@@ -3,12 +3,12 @@ package module
 import (
 	"context"
 	"fmt"
+	app "github.com/odycenter/std-library/app/conf"
+	internal "github.com/odycenter/std-library/app/internal/module"
+	"github.com/odycenter/std-library/app/kafka"
 	"log"
 	"log/slog"
 	"runtime"
-	app "std-library/app/conf"
-	internal "std-library/app/internal/module"
-	"std-library/app/kafka"
 	"sync"
 )
 

@@ -1,8 +1,8 @@
 package email_test
 
 import (
+	"github.com/odycenter/std-library/email"
 	"log"
-	"std-library/email"
 	"testing"
 )
 

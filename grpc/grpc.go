@@ -3,11 +3,11 @@ package grpc
 import (
 	"context"
 	"fmt"
+	grpcweb "github.com/odycenter/std-library/app/web/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
-	grpcweb "std-library/app/web/grpc"
 	"strings"
 	"time"
 )

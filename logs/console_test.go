@@ -2,8 +2,8 @@ package logs_test
 
 import (
 	"context"
-	"std-library/app/log/consts/logKey"
-	"std-library/logs"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
+	"github.com/odycenter/std-library/logs"
 	"testing"
 )
 

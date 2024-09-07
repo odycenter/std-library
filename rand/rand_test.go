@@ -2,7 +2,7 @@ package rand_test
 
 import (
 	"fmt"
-	"std-library/rand"
+	"github.com/odycenter/std-library/rand"
 	"testing"
 	"time"
 )

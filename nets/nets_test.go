@@ -2,7 +2,7 @@ package nets_test
 
 import (
 	"fmt"
-	"std-library/nets"
+	"github.com/odycenter/std-library/nets"
 	"testing"
 )
 

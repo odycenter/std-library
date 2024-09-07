@@ -3,7 +3,7 @@ package ecdsa_test
 import (
 	"encoding/base64"
 	"fmt"
-	"std-library/crypto/ecdsa"
+	"github.com/odycenter/std-library/crypto/ecdsa"
 	"testing"
 )
 

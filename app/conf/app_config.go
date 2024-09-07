@@ -3,10 +3,10 @@ package app
 import (
 	"flag"
 	"fmt"
+	"github.com/odycenter/std-library/app/property"
+	"github.com/odycenter/std-library/logs"
 	"log/slog"
 	"os"
-	"std-library/app/property"
-	"std-library/logs"
 	"sync"
 )
 

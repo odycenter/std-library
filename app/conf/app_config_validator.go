@@ -2,10 +2,10 @@ package app
 
 import (
 	"fmt"
+	"github.com/odycenter/std-library/app/property"
 	"github.com/stretchr/testify/require"
 	"os"
 	"path/filepath"
-	"std-library/app/property"
 	"strings"
 	"testing"
 

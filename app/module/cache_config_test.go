@@ -3,8 +3,8 @@ package module_test
 import (
 	"context"
 	"fmt"
-	"std-library/app/cache"
-	"std-library/app/module"
+	"github.com/odycenter/std-library/app/cache"
+	"github.com/odycenter/std-library/app/module"
 	"testing"
 	"time"
 )

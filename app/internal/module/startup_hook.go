@@ -2,8 +2,8 @@ package internal
 
 import (
 	"context"
+	"github.com/odycenter/std-library/app/async"
 	"log/slog"
-	"std-library/app/async"
 	"time"
 )
 

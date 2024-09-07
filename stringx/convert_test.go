@@ -2,7 +2,7 @@ package stringx_test
 
 import (
 	"fmt"
-	"std-library/stringx"
+	"github.com/odycenter/std-library/stringx"
 	"testing"
 )
 

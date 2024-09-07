@@ -2,7 +2,7 @@ package operator_test
 
 import (
 	"fmt"
-	"std-library/operator"
+	"github.com/odycenter/std-library/operator"
 	"testing"
 )
 

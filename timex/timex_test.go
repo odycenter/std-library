@@ -2,8 +2,8 @@ package timex_test
 
 import (
 	"fmt"
+	"github.com/odycenter/std-library/timex"
 	"math"
-	"std-library/timex"
 	"testing"
 	"time"
 )

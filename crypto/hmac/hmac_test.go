@@ -2,7 +2,7 @@ package hmac_test
 
 import (
 	"fmt"
-	"std-library/crypto/hmac"
+	"github.com/odycenter/std-library/crypto/hmac"
 	"testing"
 )
 

@@ -2,11 +2,11 @@ package internal_log
 
 import (
 	"context"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
+	"github.com/odycenter/std-library/logs"
 	"io"
 	"log/slog"
 	"path/filepath"
-	"std-library/app/log/consts/logKey"
-	"std-library/logs"
 	"strings"
 	"sync/atomic"
 )

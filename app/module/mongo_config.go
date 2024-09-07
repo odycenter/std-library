@@ -3,10 +3,10 @@ package module
 import (
 	"context"
 	"crypto/tls"
+	internal "github.com/odycenter/std-library/app/internal/module"
+	internalmongo "github.com/odycenter/std-library/app/internal/mongo"
+	mongomigration "github.com/odycenter/std-library/mongo"
 	"log"
-	internal "std-library/app/internal/module"
-	internalmongo "std-library/app/internal/mongo"
-	mongomigration "std-library/mongo"
 	"time"
 )
 

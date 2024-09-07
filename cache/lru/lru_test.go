@@ -2,7 +2,7 @@ package lru_test
 
 import (
 	"fmt"
-	"std-library/cache/lru"
+	"github.com/odycenter/std-library/cache/lru"
 	"sync"
 	"testing"
 	"time"

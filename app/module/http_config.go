@@ -5,12 +5,12 @@ import (
 	"compress/gzip"
 	"embed"
 	"github.com/beego/beego/v2/server/web"
+	internalHttp "github.com/odycenter/std-library/app/internal/web/http"
+	internalSys "github.com/odycenter/std-library/app/internal/web/sys"
+	appWeb "github.com/odycenter/std-library/app/web"
 	"io"
 	"log"
 	"log/slog"
-	internalHttp "std-library/app/internal/web/http"
-	internalSys "std-library/app/internal/web/sys"
-	appWeb "std-library/app/web"
 )
 
 type HTTPConfig struct {

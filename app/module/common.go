@@ -4,12 +4,12 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"github.com/odycenter/std-library/app/async"
+	app "github.com/odycenter/std-library/app/conf"
+	internal "github.com/odycenter/std-library/app/internal/module"
 	"log"
 	"log/slog"
 	"os"
-	"std-library/app/async"
-	app "std-library/app/conf"
-	internal "std-library/app/internal/module"
 	"time"
 )
 

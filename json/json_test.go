@@ -2,9 +2,9 @@ package json_test
 
 import (
 	"fmt"
+	"github.com/odycenter/std-library/json"
 	"github.com/stretchr/testify/assert"
 	"math/big"
-	"std-library/json"
 	"testing"
 )
 

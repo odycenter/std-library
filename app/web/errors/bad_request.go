@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"std-library/app/web/http"
+	"github.com/odycenter/std-library/app/web/http"
 )
 
 func BadRequest(message string, errorCode ...string) {

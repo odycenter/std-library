@@ -2,7 +2,7 @@ package locker_test
 
 import (
 	"fmt"
-	"std-library/locker"
+	"github.com/odycenter/std-library/locker"
 	"testing"
 )
 

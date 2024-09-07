@@ -1,8 +1,8 @@
 package hash_test
 
 import (
+	"github.com/odycenter/std-library/crypto/hash"
 	"github.com/stretchr/testify/assert"
-	"std-library/crypto/hash"
 	"testing"
 )
 

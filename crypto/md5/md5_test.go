@@ -2,7 +2,7 @@ package md5_test
 
 import (
 	"fmt"
-	"std-library/crypto/md5"
+	"github.com/odycenter/std-library/crypto/md5"
 	"testing"
 )
 

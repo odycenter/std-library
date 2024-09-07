@@ -2,7 +2,7 @@ package metadata_test
 
 import (
 	"fmt"
-	"std-library/grpc/metadata"
+	"github.com/odycenter/std-library/grpc/metadata"
 	"testing"
 )
 

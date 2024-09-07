@@ -10,8 +10,8 @@ package regexps
 
 import (
 	"errors"
+	"github.com/odycenter/std-library/regexps/syntax"
 	"math"
-	"std-library/regexps/syntax"
 	"strconv"
 	"sync"
 	"time"

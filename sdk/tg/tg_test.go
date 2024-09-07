@@ -2,7 +2,7 @@ package tg_test
 
 import (
 	tgBotApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"std-library/sdk/tg"
+	"github.com/odycenter/std-library/sdk/tg"
 	"testing"
 )
 

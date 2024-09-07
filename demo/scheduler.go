@@ -2,11 +2,11 @@ package demo
 
 import (
 	"context"
+	actionlog "github.com/odycenter/std-library/app/log"
+	"github.com/odycenter/std-library/app/module"
+	reflects "github.com/odycenter/std-library/reflect"
 	"log/slog"
 	"path/filepath"
-	actionlog "std-library/app/log"
-	"std-library/app/module"
-	reflects "std-library/reflect"
 	"strconv"
 	"time"
 )

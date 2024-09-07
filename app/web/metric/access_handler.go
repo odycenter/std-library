@@ -1,10 +1,10 @@
 package metric
 
 import (
+	internal_http "github.com/odycenter/std-library/app/internal/web/http"
+	"github.com/odycenter/std-library/nets"
 	"log/slog"
 	"net/http"
-	internal_http "std-library/app/internal/web/http"
-	"std-library/nets"
 )
 
 const MetricsPath = "/metrics"

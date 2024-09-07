@@ -1,7 +1,7 @@
 package internal_cache
 
 import (
-	reflects "std-library/reflect"
+	reflects "github.com/odycenter/std-library/reflect"
 	"strings"
 )
 

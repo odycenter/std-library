@@ -1,8 +1,8 @@
 package dates_test
 
 import (
+	dates "github.com/odycenter/std-library/date"
 	"github.com/stretchr/testify/assert"
-	dates "std-library/date"
 	"testing"
 	"time"
 )

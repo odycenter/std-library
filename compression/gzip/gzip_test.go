@@ -3,7 +3,7 @@ package gzip_test
 import (
 	"encoding/base64"
 	"fmt"
-	"std-library/compression/gzip"
+	"github.com/odycenter/std-library/compression/gzip"
 	"testing"
 )
 

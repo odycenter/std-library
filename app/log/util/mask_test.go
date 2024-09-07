@@ -1,8 +1,8 @@
 package util_test
 
 import (
+	"github.com/odycenter/std-library/app/log/util"
 	"github.com/stretchr/testify/assert"
-	"std-library/app/log/util"
 	"testing"
 )
 

@@ -2,8 +2,8 @@ package kafka_test
 
 import (
 	"context"
+	"github.com/odycenter/std-library/kafka"
 	"log"
-	"std-library/kafka"
 	"testing"
 	"time"
 )

@@ -3,11 +3,11 @@ package internal
 import (
 	"context"
 	"fmt"
+	actionlog "github.com/odycenter/std-library/app/log"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
 	"log"
 	"log/slog"
 	"os"
-	actionlog "std-library/app/log"
-	"std-library/app/log/consts/logKey"
 	"strconv"
 	"sync/atomic"
 	"time"

@@ -2,11 +2,11 @@ package grpc
 
 import (
 	"context"
+	"github.com/odycenter/std-library/app/web"
+	"github.com/odycenter/std-library/app/web/metric"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"std-library/app/web"
-	"std-library/app/web/metric"
 )
 
 type ShutdownInterceptor struct {

@@ -3,7 +3,7 @@ package regexps
 import (
 	"bytes"
 	"errors"
-	"std-library/regexps/syntax"
+	"github.com/odycenter/std-library/regexps/syntax"
 )
 
 const (

@@ -2,14 +2,14 @@ package internal_sys
 
 import (
 	"fmt"
+	"github.com/odycenter/std-library/app/internal/scheduler"
+	"github.com/odycenter/std-library/app/internal/web/http"
+	actionlog "github.com/odycenter/std-library/app/log"
+	"github.com/odycenter/std-library/app/web/errors"
+	"github.com/odycenter/std-library/json"
+	"github.com/odycenter/std-library/nets"
 	"log/slog"
 	"net/http"
-	"std-library/app/internal/scheduler"
-	"std-library/app/internal/web/http"
-	actionlog "std-library/app/log"
-	"std-library/app/web/errors"
-	"std-library/json"
-	"std-library/nets"
 	"strings"
 )
 

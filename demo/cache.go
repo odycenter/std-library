@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/beego/beego/v2/server/web"
+	"github.com/odycenter/std-library/app/cache"
+	"github.com/odycenter/std-library/app/module"
 	"log/slog"
 	"net/http"
-	"std-library/app/cache"
-	"std-library/app/module"
 	"time"
 )
 

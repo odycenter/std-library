@@ -2,7 +2,7 @@ package web
 
 import (
 	beegoWeb "github.com/beego/beego/v2/server/web"
-	"std-library/app/web/errors"
+	"github.com/odycenter/std-library/app/web/errors"
 )
 
 type errorController struct {

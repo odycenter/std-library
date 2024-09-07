@@ -2,11 +2,11 @@ package s3_test
 
 import (
 	"fmt"
+	awss3 "github.com/odycenter/std-library/sdk/aws/s3"
 	"io"
 	"math/rand"
 	"os"
 	"runtime"
-	awss3 "std-library/sdk/aws/s3"
 	"testing"
 	"time"
 )

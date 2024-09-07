@@ -2,10 +2,10 @@ package module
 
 import (
 	"context"
+	internal "github.com/odycenter/std-library/app/internal/module"
+	"github.com/odycenter/std-library/app/web"
+	"github.com/odycenter/std-library/app/web/metric"
 	"log"
-	internal "std-library/app/internal/module"
-	"std-library/app/web"
-	"std-library/app/web/metric"
 )
 
 type MetricConfig struct {

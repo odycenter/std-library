@@ -2,11 +2,11 @@ package module
 
 import (
 	"github.com/beego/beego/v2/server/web"
+	app "github.com/odycenter/std-library/app/conf"
+	internalLog "github.com/odycenter/std-library/app/internal/log"
+	internalsys "github.com/odycenter/std-library/app/internal/web/sys"
 	"log/slog"
 	"os"
-	app "std-library/app/conf"
-	internalLog "std-library/app/internal/log"
-	internalsys "std-library/app/internal/web/sys"
 )
 
 type LogConfig struct {

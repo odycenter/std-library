@@ -1,7 +1,7 @@
 package logs_test
 
 import (
-	"std-library/logs"
+	"github.com/odycenter/std-library/logs"
 	"testing"
 )
 

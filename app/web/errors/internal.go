@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"std-library/app/web/http"
+	"github.com/odycenter/std-library/app/web/http"
 )
 
 func Internal(message string, errorCode ...string) {

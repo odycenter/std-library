@@ -1,7 +1,7 @@
 package util_test
 
 import (
-	"std-library/app/log/util"
+	"github.com/odycenter/std-library/app/log/util"
 	"testing"
 	"time"
 )

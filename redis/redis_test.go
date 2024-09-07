@@ -2,9 +2,9 @@ package redis_test
 
 import (
 	"context"
+	"github.com/odycenter/std-library/redis"
 	"github.com/pkg/errors"
 	"log"
-	"std-library/redis"
 	"testing"
 	"time"
 )

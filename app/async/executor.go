@@ -2,10 +2,10 @@ package async
 
 import (
 	"context"
+	"github.com/odycenter/std-library/app/web/metric"
 	"github.com/panjf2000/ants/v2"
 	"log"
 	"log/slog"
-	"std-library/app/web/metric"
 	"sync"
 	"time"
 )

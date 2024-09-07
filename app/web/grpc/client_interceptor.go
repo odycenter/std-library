@@ -3,11 +3,11 @@ package grpc
 import (
 	"context"
 	"encoding/base64"
+	app "github.com/odycenter/std-library/app/conf"
+	actionlog "github.com/odycenter/std-library/app/log"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	app "std-library/app/conf"
-	actionlog "std-library/app/log"
-	"std-library/app/log/consts/logKey"
 	"strconv"
 	"time"
 )

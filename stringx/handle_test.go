@@ -2,9 +2,9 @@ package stringx_test
 
 import (
 	"fmt"
+	"github.com/odycenter/std-library/array"
+	"github.com/odycenter/std-library/stringx"
 	"github.com/stretchr/testify/assert"
-	"std-library/array"
-	"std-library/stringx"
 	"testing"
 )
 

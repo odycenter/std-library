@@ -2,9 +2,9 @@ package demo
 
 import (
 	"context"
+	actionlog "github.com/odycenter/std-library/app/log"
+	"github.com/odycenter/std-library/app/module"
 	"log/slog"
-	actionlog "std-library/app/log"
-	"std-library/app/module"
 )
 
 type messageHandler struct {

@@ -1,8 +1,8 @@
 package web_test
 
 import (
+	"github.com/odycenter/std-library/app/web"
 	"github.com/stretchr/testify/assert"
-	"std-library/app/web"
 	"testing"
 )
 

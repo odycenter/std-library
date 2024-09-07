@@ -2,7 +2,7 @@ package lfu_test
 
 import (
 	"fmt"
-	"std-library/cache/lfu"
+	"github.com/odycenter/std-library/cache/lfu"
 	"testing"
 	"time"
 )

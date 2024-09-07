@@ -2,8 +2,8 @@ package demo
 
 import (
 	"context"
+	"github.com/odycenter/std-library/app/module"
 	"log/slog"
-	"std-library/app/module"
 )
 
 type OnStartupTask struct {

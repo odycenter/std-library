@@ -1,8 +1,8 @@
 package kafka_test
 
 import (
+	"github.com/odycenter/std-library/app/kafka"
 	"github.com/stretchr/testify/assert"
-	"std-library/app/kafka"
 	"testing"
 )
 

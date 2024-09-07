@@ -1,7 +1,7 @@
 package slack_test
 
 import (
-	"std-library/sdk/slack"
+	"github.com/odycenter/std-library/sdk/slack"
 	"testing"
 )
 

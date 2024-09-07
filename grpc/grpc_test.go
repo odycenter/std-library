@@ -2,7 +2,7 @@ package grpc_test
 
 import (
 	"fmt"
-	"std-library/grpc"
+	"github.com/odycenter/std-library/grpc"
 	"testing"
 )
 

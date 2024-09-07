@@ -1,6 +1,6 @@
 module std-library
 
-go 1.22.5
+go 1.23.0
 
 require (
 	cloud.google.com/go/vision v1.2.0
@@ -144,8 +144,4 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-)
-
-replace (
-	std-library => github.com/odycenter/std-library v0.0.3
 )

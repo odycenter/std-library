@@ -2,7 +2,7 @@ package array_test
 
 import (
 	"fmt"
-	"std-library/array"
+	"github.com/odycenter/std-library/array"
 	"testing"
 )
 

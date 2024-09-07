@@ -2,7 +2,7 @@ package pagex_test
 
 import (
 	"fmt"
-	"std-library/pagex"
+	"github.com/odycenter/std-library/pagex"
 	"testing"
 )
 

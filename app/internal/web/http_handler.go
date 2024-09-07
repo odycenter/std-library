@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	beegoCtx "github.com/beego/beego/v2/server/web/context"
+	actionlog "github.com/odycenter/std-library/app/log"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
+	appWeb "github.com/odycenter/std-library/app/web"
+	"github.com/odycenter/std-library/app/web/errors"
 	"net/http"
-	actionlog "std-library/app/log"
-	"std-library/app/log/consts/logKey"
-	appWeb "std-library/app/web"
-	"std-library/app/web/errors"
 )
 
 type HTTPHandler struct {

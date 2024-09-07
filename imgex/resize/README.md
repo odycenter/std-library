@@ -1,15 +1,14 @@
-Resize
-======
+# Resize
 
 Image resizing for the [Go programming language](http://golang.org) with common interpolation methods.
 
-Usage
------
+## Usage
+
 The resize package provides 2 functions:
 
-* `resize.Resize` creates a scaled image with new dimensions (`width`, `height`) using the interpolation function `interp`.
+- `resize.Resize` creates a scaled image with new dimensions (`width`, `height`) using the interpolation function `interp`.
   If either `width` or `height` is set to 0, it will be set to an aspect ratio preserving value.
-* `resize.Thumbnail` downscales an image preserving its aspect ratio to the maximum dimensions (`maxWidth`, `maxHeight`).
+- `resize.Thumbnail` downscales an image preserving its aspect ratio to the maximum dimensions (`maxWidth`, `maxHeight`).
   It will return the original image if original sizes are smaller than the provided dimensions.
 
 ```go
@@ -34,7 +33,7 @@ Sample usage:
 package main
 
 import (
-	"std-library/imagex/resize"
+	"github.com/odycenter/std-library/imagex/resize"
 	"image/jpeg"
 	"log"
 	"os"
@@ -69,8 +68,7 @@ func main() {
 }
 ```
 
-Caveats
--------
+## Caveats
 
-* Optimized access routines are used for `image.RGBA`, `image.NRGBA`, `image.RGBA64`, `image.NRGBA64`, `image.YCbCr`, `image.Gray`, and `image.Gray16` types. All other image types are accessed in a generic way that will result in slow processing speed.
-* JPEG images are stored in `image.YCbCr`. This image format stores data in a way that will decrease processing speed. A resize may be up to 2 times slower than with `image.RGBA`. 
+- Optimized access routines are used for `image.RGBA`, `image.NRGBA`, `image.RGBA64`, `image.NRGBA64`, `image.YCbCr`, `image.Gray`, and `image.Gray16` types. All other image types are accessed in a generic way that will result in slow processing speed.
+- JPEG images are stored in `image.YCbCr`. This image format stores data in a way that will decrease processing speed. A resize may be up to 2 times slower than with `image.RGBA`.

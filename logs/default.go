@@ -4,10 +4,10 @@ package logs
 import (
 	"context"
 	"fmt"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
 	"log"
 	"os"
 	"runtime"
-	"std-library/app/log/consts/logKey"
 	"strings"
 	"sync"
 	"time"

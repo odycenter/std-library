@@ -3,11 +3,11 @@ package module
 import (
 	"context"
 	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	internal "github.com/odycenter/std-library/app/internal/module"
+	"github.com/odycenter/std-library/app/web"
+	server "github.com/odycenter/std-library/app/web/grpc"
 	"google.golang.org/grpc"
 	"log"
-	internal "std-library/app/internal/module"
-	"std-library/app/web"
-	server "std-library/app/web/grpc"
 )
 
 type GrpcServerConfig struct {

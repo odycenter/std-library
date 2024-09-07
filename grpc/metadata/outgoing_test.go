@@ -1,7 +1,7 @@
 package metadata_test
 
 import (
-	"std-library/grpc/metadata"
+	"github.com/odycenter/std-library/grpc/metadata"
 	"testing"
 	"time"
 )

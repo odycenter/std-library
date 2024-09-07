@@ -2,9 +2,9 @@ package demo
 
 import (
 	"context"
+	"github.com/odycenter/std-library/demo/test"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"std-library/demo/test"
 	"strconv"
 )
 

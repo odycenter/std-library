@@ -3,12 +3,12 @@ package log
 import (
 	"context"
 	"encoding/json"
+	internallog "github.com/odycenter/std-library/app/internal/log"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
+	"github.com/odycenter/std-library/app/log/dto"
+	"github.com/odycenter/std-library/app/web/errors"
 	"reflect"
 	"runtime/debug"
-	internallog "std-library/app/internal/log"
-	"std-library/app/log/consts/logKey"
-	"std-library/app/log/dto"
-	"std-library/app/web/errors"
 )
 
 func AddMaskedField(fieldName ...string) {

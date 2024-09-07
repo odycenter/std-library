@@ -3,11 +3,11 @@ package module
 import (
 	"context"
 	"github.com/beego/beego/v2/server/web"
-	internal "std-library/app/internal/module"
-	internalscheduler "std-library/app/internal/scheduler"
-	"std-library/app/internal/web/sys"
-	"std-library/app/scheduler"
-	reflects "std-library/reflect"
+	internal "github.com/odycenter/std-library/app/internal/module"
+	internalscheduler "github.com/odycenter/std-library/app/internal/scheduler"
+	"github.com/odycenter/std-library/app/internal/web/sys"
+	"github.com/odycenter/std-library/app/scheduler"
+	reflects "github.com/odycenter/std-library/reflect"
 )
 
 type SchedulerConfig struct {

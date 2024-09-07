@@ -2,7 +2,7 @@ package sha1_test
 
 import (
 	"fmt"
-	"std-library/crypto/sha/sha1"
+	"github.com/odycenter/std-library/crypto/sha/sha1"
 	"testing"
 )
 

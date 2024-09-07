@@ -2,12 +2,12 @@ package util
 
 import (
 	"context"
-	internalDB "std-library/app/internal/db"
-	internal "std-library/app/internal/module"
-	internalscheduler "std-library/app/internal/scheduler"
-	internalhttp "std-library/app/internal/web/http"
-	"std-library/app/log/consts/logKey"
-	"std-library/app/scheduler"
+	internalDB "github.com/odycenter/std-library/app/internal/db"
+	internal "github.com/odycenter/std-library/app/internal/module"
+	internalscheduler "github.com/odycenter/std-library/app/internal/scheduler"
+	internalhttp "github.com/odycenter/std-library/app/internal/web/http"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
+	"github.com/odycenter/std-library/app/scheduler"
 	"time"
 )
 

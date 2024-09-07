@@ -1,8 +1,8 @@
 package errors
 
 import (
-	error "std-library/app/web/errors"
-	"std-library/app/web/http"
+	error "github.com/odycenter/std-library/app/web/errors"
+	"github.com/odycenter/std-library/app/web/http"
 )
 
 // Deprecated: Use std-library/app/web/errors.Unauthorized instead.

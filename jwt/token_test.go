@@ -1,8 +1,8 @@
 package jwt_test
 
 import (
+	"github.com/odycenter/std-library/jwt"
 	"github.com/stretchr/testify/assert"
-	"std-library/jwt"
 	"testing"
 	"time"
 )

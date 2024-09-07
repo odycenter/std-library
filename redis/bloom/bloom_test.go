@@ -2,7 +2,7 @@ package bloom_test
 
 import (
 	"fmt"
-	"std-library/redis/bloom"
+	"github.com/odycenter/std-library/redis/bloom"
 	"testing"
 )
 

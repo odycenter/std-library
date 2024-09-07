@@ -3,7 +3,7 @@ package valid_test
 import (
 	"encoding/json"
 	"fmt"
-	"std-library/valid"
+	"github.com/odycenter/std-library/valid"
 	"testing"
 )
 

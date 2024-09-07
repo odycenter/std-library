@@ -2,9 +2,9 @@ package tripleDes_test
 
 import (
 	"fmt"
-	"std-library/crypto"
-	"std-library/crypto/tripleDes"
-	"std-library/json"
+	"github.com/odycenter/std-library/crypto"
+	"github.com/odycenter/std-library/crypto/tripleDes"
+	"github.com/odycenter/std-library/json"
 	"testing"
 )
 

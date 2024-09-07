@@ -1,9 +1,9 @@
 package web
 
 import (
+	"github.com/odycenter/std-library/app/web"
 	"log/slog"
 	"net/http"
-	"std-library/app/web"
 )
 
 const HealthCheckPath = "/health-check"

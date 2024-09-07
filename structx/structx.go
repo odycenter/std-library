@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"github.com/odycenter/std-library/crypto/md5"
 	"net/url"
 	"reflect"
 	"regexp"
 	"sort"
-	"std-library/crypto/md5"
 	"strings"
 )
 

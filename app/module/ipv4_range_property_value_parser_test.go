@@ -1,8 +1,8 @@
 package module_test
 
 import (
+	"github.com/odycenter/std-library/app/module"
 	"reflect"
-	"std-library/app/module"
 	"testing"
 )
 

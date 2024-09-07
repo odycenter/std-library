@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	app "github.com/odycenter/std-library/app/conf"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"log"
 	"log/slog"
 	"net"
-	app "std-library/app/conf"
 	"time"
 )
 

@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/odycenter/std-library/app/async"
+	app "github.com/odycenter/std-library/app/conf"
+	actionlog "github.com/odycenter/std-library/app/log"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
 	"log/slog"
-	"std-library/app/async"
-	app "std-library/app/conf"
-	actionlog "std-library/app/log"
-	"std-library/app/log/consts/logKey"
 	"strings"
 )
 

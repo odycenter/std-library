@@ -2,9 +2,9 @@ package kafka_test
 
 import (
 	"context"
+	app "github.com/odycenter/std-library/app/conf"
+	"github.com/odycenter/std-library/app/kafka"
 	"os"
-	app "std-library/app/conf"
-	"std-library/app/kafka"
 	"testing"
 )
 

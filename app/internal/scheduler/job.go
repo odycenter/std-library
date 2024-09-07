@@ -1,6 +1,6 @@
 package internal_scheduler
 
-import "std-library/app/scheduler"
+import "github.com/odycenter/std-library/app/scheduler"
 
 type DisallowConcurrentJob struct {
 	job scheduler.Job

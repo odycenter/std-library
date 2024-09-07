@@ -2,11 +2,11 @@ package dto
 
 import (
 	"encoding/json"
+	app "github.com/odycenter/std-library/app/conf"
+	internallog "github.com/odycenter/std-library/app/internal/log"
+	"github.com/odycenter/std-library/app/log/consts/logKey"
+	"github.com/odycenter/std-library/app/log/util"
 	"log/slog"
-	app "std-library/app/conf"
-	internallog "std-library/app/internal/log"
-	"std-library/app/log/consts/logKey"
-	"std-library/app/log/util"
 	"time"
 )
 

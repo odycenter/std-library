@@ -1,8 +1,8 @@
 package kafka
 
 import (
+	"github.com/odycenter/std-library/app/log/util"
 	"github.com/segmentio/kafka-go"
-	"std-library/app/log/util"
 	"sync"
 )
 

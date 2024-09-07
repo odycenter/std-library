@@ -2,7 +2,7 @@ package crash_test
 
 import (
 	"fmt"
-	"std-library/crash"
+	"github.com/odycenter/std-library/crash"
 	"testing"
 )
 

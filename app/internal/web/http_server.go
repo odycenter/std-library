@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	beegoWeb "github.com/beego/beego/v2/server/web"
+	"github.com/odycenter/std-library/app/web"
 	"log/slog"
-	"std-library/app/web"
 	"time"
 )
 

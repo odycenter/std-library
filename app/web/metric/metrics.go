@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	internal_http "github.com/odycenter/std-library/app/internal/web/http"
+	"github.com/odycenter/std-library/app/web"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"log/slog"
 	"net/http"
-	internal_http "std-library/app/internal/web/http"
-	"std-library/app/web"
 )
 
 type Server struct {

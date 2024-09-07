@@ -2,7 +2,7 @@ package sha256_test
 
 import (
 	"fmt"
-	"std-library/crypto/sha/sha256"
+	"github.com/odycenter/std-library/crypto/sha/sha256"
 	"testing"
 )
 

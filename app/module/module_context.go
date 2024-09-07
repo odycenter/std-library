@@ -3,13 +3,13 @@ package module
 import (
 	"context"
 	"github.com/beego/beego/v2/server/web"
+	internalLog "github.com/odycenter/std-library/app/internal/log"
+	internal "github.com/odycenter/std-library/app/internal/module"
+	internalWeb "github.com/odycenter/std-library/app/internal/web"
+	"github.com/odycenter/std-library/app/internal/web/sys"
+	"github.com/odycenter/std-library/app/property"
 	"log/slog"
 	"os"
-	internalLog "std-library/app/internal/log"
-	internal "std-library/app/internal/module"
-	internalWeb "std-library/app/internal/web"
-	"std-library/app/internal/web/sys"
-	"std-library/app/property"
 	"sync"
 )
 

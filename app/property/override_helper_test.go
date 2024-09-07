@@ -1,8 +1,8 @@
 package property_test
 
 import (
+	"github.com/odycenter/std-library/app/property"
 	"github.com/stretchr/testify/assert"
-	"std-library/app/property"
 	"testing"
 )
 

@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	app "github.com/odycenter/std-library/app/conf"
+	redismigration "github.com/odycenter/std-library/redis"
 	"github.com/redis/go-redis/v9"
 	"log"
 	"log/slog"
-	app "std-library/app/conf"
-	redismigration "std-library/redis"
 	"time"
 )
 

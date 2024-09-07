@@ -1,12 +1,12 @@
 package internal_sys
 
 import (
+	internalcache "github.com/odycenter/std-library/app/internal/cache"
+	"github.com/odycenter/std-library/app/internal/web/http"
+	"github.com/odycenter/std-library/app/web/errors"
+	"github.com/odycenter/std-library/json"
+	"github.com/odycenter/std-library/nets"
 	"net/http"
-	internalcache "std-library/app/internal/cache"
-	"std-library/app/internal/web/http"
-	"std-library/app/web/errors"
-	"std-library/json"
-	"std-library/nets"
 	"strings"
 )
 

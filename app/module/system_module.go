@@ -2,10 +2,10 @@ package module
 
 import (
 	"embed"
+	app "github.com/odycenter/std-library/app/conf"
+	"github.com/odycenter/std-library/logs"
 	"log"
 	"log/slog"
-	app "std-library/app/conf"
-	"std-library/logs"
 	"strings"
 )
 

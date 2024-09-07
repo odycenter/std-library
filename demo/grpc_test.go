@@ -2,12 +2,12 @@ package demo_test
 
 import (
 	"context"
+	"github.com/odycenter/std-library/demo/test"
+	"github.com/odycenter/std-library/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
 	_ "net/http/pprof"
-	"std-library/demo/test"
-	"std-library/grpc"
 	"testing"
 	"time"
 )

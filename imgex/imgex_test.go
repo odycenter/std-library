@@ -2,11 +2,11 @@ package imgex_test
 
 import (
 	"fmt"
+	"github.com/odycenter/std-library/imgex"
 	"image/color"
 	"image/jpeg"
 	"os"
 	"path"
-	"std-library/imgex"
 	"testing"
 	"time"
 )

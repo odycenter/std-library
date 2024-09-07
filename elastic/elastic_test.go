@@ -3,7 +3,7 @@ package elastic_test
 import (
 	"context"
 	"fmt"
-	"std-library/elastic"
+	"github.com/odycenter/std-library/elastic"
 	"testing"
 )
 

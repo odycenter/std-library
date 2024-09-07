@@ -6,9 +6,9 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/go-sql-driver/mysql"
+	"github.com/odycenter/std-library/dbase/cloud"
 	"log"
 	"os"
-	"std-library/dbase/cloud"
 	"strings"
 	"time"
 

@@ -2,9 +2,9 @@ package module
 
 import (
 	"context"
+	internalDB "github.com/odycenter/std-library/app/internal/db"
+	internal "github.com/odycenter/std-library/app/internal/module"
 	"log"
-	internalDB "std-library/app/internal/db"
-	internal "std-library/app/internal/module"
 	"strconv"
 	"strings"
 	"time"

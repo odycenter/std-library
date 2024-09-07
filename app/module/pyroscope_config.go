@@ -2,10 +2,10 @@ package module
 
 import (
 	"context"
+	app "github.com/odycenter/std-library/app/conf"
+	internal "github.com/odycenter/std-library/app/internal/module"
+	"github.com/odycenter/std-library/pyroscope"
 	"log"
-	app "std-library/app/conf"
-	internal "std-library/app/internal/module"
-	"std-library/pyroscope"
 	"strings"
 )
 

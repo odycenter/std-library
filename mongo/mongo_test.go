@@ -3,11 +3,11 @@ package mongo_test
 import (
 	"context"
 	"encoding/json"
+	"github.com/odycenter/std-library/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/event"
 	"log"
 	"reflect"
-	"std-library/mongo"
 	"testing"
 	"time"
 )

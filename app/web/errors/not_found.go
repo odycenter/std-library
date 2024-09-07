@@ -1,6 +1,6 @@
 package errors
 
-import "std-library/app/web/http"
+import "github.com/odycenter/std-library/app/web/http"
 
 func NotFound(message string, errorCode ...string) {
 	info := GetInfo(-1, message)
