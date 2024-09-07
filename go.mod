@@ -145,3 +145,7 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace (
+	std-library => github.com/odycenter/std-library v0.0.3
+)
